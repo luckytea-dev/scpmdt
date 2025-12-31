@@ -193,14 +193,39 @@ async function checkLogin() {
     }
 }
 
-function init() {
+// ... (Garde ton début de script identique jusqu'à la fonction init) ...
+
+async function init() {
     document.getElementById('display-id').textContent = currentUser.id;
     document.getElementById('display-lvl').textContent = "LEVEL " + currentUser.level;
     document.getElementById('prof-data').innerHTML = `<p>ID: ${currentUser.id}</p><p>NOM: ${currentUser.name}</p><p>LEVEL: ${currentUser.level}</p><p>STATUT: ACTIF</p>`;
+    
     if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
-    renderChans(); renderArchives(); refreshAgents(); loadMsgs();
+    
+    // Premier chargement
+    renderChans(); 
+    renderArchives(); 
+    refreshAgents(); 
+    loadMsgs();
+
+    // LANCEMENT DE L'ACTUALISATION AUTOMATIQUE (Toutes les 5 secondes)
+    setInterval(autoRefresh, 5000); 
 }
 
+// NOUVELLE FONCTION : Actualisation automatique
+async function autoRefresh() {
+    // On récupère les données sans sauvegarder
+    await syncCloud(false); 
+    
+    // On met à jour l'interface visuelle
+    loadMsgs();       // Actualise le chat
+    renderArchives(); // Actualise la liste des rapports
+    refreshAgents();  // Actualise la liste des agents
+    
+    console.log("Système actualisé : " + new Date().toLocaleTimeString());
+}
+
+// ... (Le reste de tes fonctions sendMsg, saveReport, etc. reste le même) ...
 // TERMINAL
 const termIn = document.getElementById('term-in');
 const termLog = document.getElementById('term-log');
