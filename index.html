@@ -1,137 +1,118 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>SCP Foundation - MDT</title>
-<style>
-    * { box-sizing: border-box; font-family: 'Courier New', monospace; }
-    body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; }
+    <meta charset="UTF-8">
+    <title>SCP Foundation - MDT (GitHub Version)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Courier New', monospace; }
+        body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; }
 
-    /* UI THEME - HEADER */
-    #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; letter-spacing: 1px; }
-    .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
-    .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
-    .header-user-info { margin-left: auto; font-size: 13px; color: #bbb; background: #1a1a1a; padding: 5px 15px; border: 1px solid #333; }
+        /* UI THEME */
+        #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; letter-spacing: 1px; z-index: 1000; position: relative; }
+        .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
+        .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
+        .header-user-info { margin-left: auto; font-size: 13px; color: #bbb; background: #1a1a1a; padding: 5px 15px; border: 1px solid #333; }
 
-    #sidebar { position: absolute; top: 60px; left: 0; width: 220px; height: calc(100vh - 60px); background: #111; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-    .sidebar-btn { padding: 12px; border: 1px solid #444; background: #1a1a1a; color: #bbb; font-size: 11px; cursor: pointer; text-align: left; text-transform: uppercase; }
-    .sidebar-btn:hover { background: #333; color: #fff; }
-    .admin-only { display: none; border-color: #600 !important; color: #f44 !important; }
+        #sidebar { position: absolute; top: 60px; left: 0; width: 220px; height: calc(100vh - 60px); background: #111; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 500; }
+        .sidebar-btn { padding: 12px; border: 1px solid #444; background: #1a1a1a; color: #bbb; font-size: 11px; cursor: pointer; text-align: left; text-transform: uppercase; transition: 0.2s; }
+        .sidebar-btn:hover { background: #333; color: #fff; border-color: #666; }
+        .admin-only { display: none; border-color: #600 !important; color: #f44 !important; }
 
-    /* WINDOWS SYSTEM */
-    .window { position: absolute; background: #0f0f0f; border: 1px solid #333; display: none; flex-direction: column; width: 850px; height: 600px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
-    .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; user-select: none; }
-    .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
-    .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
+        /* WINDOWS SYSTEM */
+        .window { position: absolute; background: #0f0f0f; border: 1px solid #333; display: none; flex-direction: column; width: 850px; height: 600px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.9); top: 100px; left: 250px; }
+        .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; user-select: none; }
+        .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
+        .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
 
-    /* CHAT & COMMS */
-    .chat-container { display: flex; height: 100%; padding: 0; }
-    #chan-list { width: 200px; border-right: 1px solid #333; padding: 15px; overflow-y: auto; background: #0d0d0d; }
-    #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
-    .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
+        /* MESSAGERIE */
+        .chat-container { display: flex; height: 100%; padding: 0; }
+        #chan-list { width: 200px; border-right: 1px solid #333; padding: 15px; overflow-y: auto; background: #0d0d0d; }
+        #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
+        .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; color: #0f0; }
 
-    /* REPORT STYLE */
-    .report-paper { background: #fff; color: #000; padding: 40px; min-height: 100%; font-family: 'Times New Roman', serif; word-wrap: break-word; }
-    .report-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        /* INPUTS */
+        .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
+        .input-scp:focus { border-color: #f44; }
 
-    /* INPUTS & TABLES */
-    .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; border-bottom: 2px solid #444; padding: 10px; color: #f44; }
-    td { padding: 10px; border-bottom: 1px solid #222; }
-    .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; margin-right: 5px; }
-
-    #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-    #win-duality { width: 450px; height: 300px; border-color: #555; }
-    .duality-terminal { background: #000; color: #0ff; font-family: monospace; padding: 10px; height: 100%; font-size: 12px; border: 1px inset #333; }
-</style>
+        #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        
+        /* REPORT VIEW */
+        .report-paper { background: #fff; color: #000; padding: 40px; min-height: 100%; font-family: 'Times New Roman', serif; }
+    </style>
 </head>
 <body>
 
 <div id="login-overlay">
-    <div style="border: 1px solid #333; padding: 40px; width: 450px; background: #0a0a0a; text-align: center;">
-        <img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png" style="width:100px; filter:invert(1); margin-bottom:20px;">
-        <h2 style="letter-spacing: 5px;">SCP FOUNDATION</h2>
+    <div style="border: 1px solid #333; padding: 40px; width: 400px; background: #0a0a0a; text-align: center;">
+        <img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png" style="width:80px; filter:invert(1); margin-bottom:20px;">
+        <h2 style="letter-spacing: 3px;">AUTHENTIFICATION</h2>
         <input type="text" id="user-id" class="input-scp" style="text-align:center" placeholder="ID PERSONNEL">
         <input type="password" id="user-pass" class="input-scp" style="text-align:center" placeholder="CLÉ DE SÉCURITÉ">
-        <button id="login-btn" class="sidebar-btn" style="width:100%;" onclick="checkLogin()">AUTHENTIFICATION</button>
-        <div id="login-msg" style="color:#f44; margin-top:10px;"></div>
+        <button id="login-btn" class="sidebar-btn" style="width:100%;" onclick="checkLogin()">INITIALISER CONNEXION</button>
+        <div id="login-msg" style="color:#f44; margin-top:15px; font-size: 12px;"></div>
     </div>
 </div>
 
 <div id="topbar">
-    <span class="header-restricted">[RESTRICTED]</span>
-    <span class="header-site">SCP FOUNDATION NET : SITE-██</span>
-    <div class="header-user-info">
-        AGENT: <span id="display-id">________</span> | CLEARANCE: <span id="display-lvl">____</span>
-    </div>
+    <span class="header-restricted">[NIVEAU SECRET DÉFENSE]</span>
+    <span class="header-site">BASE DE DONNÉES SCIPNET - SITE-01</span>
+    <div class="header-user-info">AGENT: <span id="display-id">---</span> | ACCRÉDITATION: <span id="display-lvl">---</span></div>
 </div>
 
 <div id="sidebar">
     <div class="sidebar-btn" data-open="profile">Dossier Personnel</div>
     <div class="sidebar-btn" data-open="documents">Archives SCP</div>
-    <div class="sidebar-btn" data-open="creator" style="color: #0f0; border-color: #0f04;">Créer un Rapport</div>
+    <div class="sidebar-btn" data-open="creator" style="color: #0f0;">Créer Rapport</div>
     <div class="sidebar-btn" data-open="comms">Communications</div>
-    <div class="sidebar-btn" data-open="terminal">Terminal</div>
-    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Administration</div>
-    <div class="sidebar-btn admin-only" data-open="spy" style="color:#f44; border-color:#600;">O5 - Surveillance Comms</div>
-    <div class="sidebar-btn" onclick="location.reload()" style="margin-top:auto; color:#f44;">Déconnexion</div>
+    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Gestion Personnel</div>
+    <div class="sidebar-btn" onclick="location.reload()" style="margin-top:auto; color:#f44; border-color:#400;">DÉCONNEXION</div>
 </div>
 
-<div id="win-profile" class="window"><div class="titlebar"><span>FICHIER PERSONNEL</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
-<div id="win-documents" class="window" style="width:900px;"><div class="titlebar"><span>ARCHIVES SÉCURISÉES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
+<div id="win-profile" class="window"><div class="titlebar"><span>PROFIL AGENT</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
+
+<div id="win-documents" class="window"><div class="titlebar"><span>ARCHIVES SÉCURISÉES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
+
 <div id="win-comms" class="window">
-    <div class="titlebar"><span>RÉSEAU COMMS</span><button data-close="win-comms">X</button></div>
+    <div class="titlebar"><span>RÉSEAU DE COMMUNICATION</span><button data-close="win-comms">X</button></div>
     <div class="content chat-container">
         <div id="chan-list"></div>
         <div id="chat-main">
-            <div id="chat-title" style="color:#f44; font-weight:bold; margin-bottom:5px;">CANAL</div>
+            <div id="chat-title" style="color:#f44; margin-bottom:5px;">CANAL: GÉNÉRAL</div>
             <div id="chat-log" class="chat-log"></div>
-            <div style="display:flex; gap:10px;">
-                <input id="chat-in" class="input-scp" placeholder="Message..." autocomplete="off">
-                <button class="sidebar-btn" style="height:42px;" onclick="sendMsg()">ENVOYER</button>
+            <div style="display:flex; gap:5px;">
+                <input id="chat-in" class="input-scp" placeholder="Entrer message..." autocomplete="off">
+                <button class="sidebar-btn" style="height:40px;" onclick="sendMsg()">ENVOYER</button>
             </div>
         </div>
     </div>
 </div>
-<div id="win-spy" class="window"><div class="titlebar"><span>SURVEILLANCE GLOBALE O5</span><button data-close="win-spy">X</button></div><div class="content" id="spy-log" style="background:#000; color:#f44; font-size:12px;"></div></div>
+
 <div id="win-creator" class="window">
-    <div class="titlebar"><span id="creator-title">NOUVEAU RAPPORT SCP</span><button data-close="win-creator">X</button></div>
+    <div class="titlebar"><span>ÉDITEUR DE RAPPORT</span><button data-close="win-creator">X</button></div>
     <div class="content">
-        <input id="c-item" class="input-scp" placeholder="SCP-XXX">
-        <input id="c-class" class="input-scp" placeholder="CLASSE">
-        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU ACCRÉDITATION">
-        <input id="c-img" class="input-scp" placeholder="URL IMAGE">
-        <textarea id="c-proc" class="input-scp" style="height:80px;" placeholder="PROCÉDURES"></textarea>
-        <textarea id="c-desc" class="input-scp" style="height:120px;" placeholder="DESCRIPTION"></textarea>
-        <button class="sidebar-btn" style="width:100%;" onclick="saveReport()">SAUVEGARDER SUR LE CLOUD</button>
+        <input id="c-item" class="input-scp" placeholder="Désignation (ex: SCP-001)">
+        <input id="c-lvl" type="number" class="input-scp" placeholder="Niveau requis (1-5)">
+        <textarea id="c-desc" class="input-scp" style="height:200px;" placeholder="Description et procédures..."></textarea>
+        <button class="sidebar-btn" style="width:100%; border-color:#0f0;" onclick="saveReport()">TRANSMETTRE À LA BASE DE DONNÉES</button>
     </div>
 </div>
-<div id="win-view-report" class="window" style="width:850px; height:90vh;"><div class="titlebar"><span>LECTURE ARCHIVE</span><button data-close="win-view-report">X</button></div><div class="content" id="report-viewer" style="background:#222;"></div></div>
-<div id="win-terminal" class="window">
-    <div class="titlebar"><span>SCP-OS TERMINAL</span><button data-close="win-terminal">X</button></div>
-    <div class="content" style="background:#000; display:flex; flex-direction:column;">
-        <div id="term-log" style="flex:1; color:#0f0; overflow-y:auto;"></div>
-        <div style="display:flex;"><span style="color:#0f0">root@site01:~#&nbsp;</span><input id="term-in" style="background:transparent; border:none; color:#0f0; flex:1; outline:none;" autocomplete="off"></div>
-    </div>
-</div>
-<div id="win-admin-agents" class="window" style="width:900px;">
-    <div class="titlebar"><span>O5 - GESTION DU PERSONNEL</span><button data-close="win-admin-agents">X</button></div>
+
+<div id="win-view-report" class="window"><div class="titlebar"><span>LECTURE ARCHIVE</span><button data-close="win-view-report">X</button></div><div class="content" id="report-viewer" style="background:#222;"></div></div>
+
+<div id="win-admin-agents" class="window">
+    <div class="titlebar"><span>O5 - CONTRÔLE DES ACCÈS</span><button data-close="win-admin-agents">X</button></div>
     <div class="content">
-        <div id="admin-form" style="background:#111; padding:15px; border:1px solid #444; margin-bottom:15px; display:flex; gap:10px;">
-            <input id="adm-id" class="input-scp" style="width:100px; margin:0;" placeholder="ID">
-            <input id="adm-pass" class="input-scp" style="width:100px; margin:0;" placeholder="KEY">
-            <input id="adm-name" class="input-scp" style="width:200px; margin:0;" placeholder="NOM">
-            <select id="adm-lvl" class="input-scp" style="width:80px; margin:0;"><option value="1">L1</option><option value="2">L2</option><option value="3">L3</option><option value="4">L4</option><option value="5">L5</option></select>
-            <button onclick="adminSave()" class="sidebar-btn" id="adm-btn">VALIDER</button>
-            <button onclick="resetAdminForm()" class="sidebar-btn" id="adm-cancel" style="display:none; border-color:#666;">ANNULER</button>
+        <div style="background:#111; padding:15px; border:1px solid #444; margin-bottom:15px;">
+            <input id="adm-id" class="input-scp" placeholder="ID (ex: AGENT-SMITH)">
+            <input id="adm-pass" class="input-scp" placeholder="Clé de sécurité">
+            <select id="adm-lvl" class="input-scp"><option value="1">Niveau 1</option><option value="2">Niveau 2</option><option value="3">Niveau 3</option><option value="4">Niveau 4</option><option value="5">Niveau 5 (O5)</option></select>
+            <button onclick="adminSave()" class="sidebar-btn" style="width:100%;">ENREGISTRER AGENT</button>
         </div>
-        <table id="agent-table"></table>
+        <table style="width:100%; text-align:left;" id="agent-table"></table>
     </div>
 </div>
 
 <script>
-// CONFIG CLOUD
 const BIN_ID = "695497c343b1c97be90f96ce";
 const MASTER_KEY = "$2a$10$eHN8MXmITN.koPG.UViRYutQVeTRQWfLWZuBlTPvHPuhXXiG1snfq";
 const WEBHOOK = "https://discordapp.com/api/webhooks/1455365063895548071/mV0Apst2lfm5E50Vyu6W2lhg9G9C1Ma9tVW22yABGkQ7VWSItGErO7VUdFYlD3HXWTgX";
@@ -140,190 +121,132 @@ let agents = {};
 let reports = [];
 let messages = [];
 let currentUser = null;
-let activeChan = "SITE-GÉNÉRAL";
-let editAgentTarget = null;
-let editReportIndex = null;
+let activeChan = "GÉNÉRAL";
 
-// SYNC CLOUD FONCTIONNELLE SUR GITHUB
 async function syncCloud(isSaving = false) {
-    const headers = { 
-        "X-Master-Key": MASTER_KEY, 
-        "Content-Type": "application/json",
-        "X-Bin-Versioning": "false" 
-    };
+    const headers = { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json", "X-Bin-Versioning": "false" };
     try {
         if (isSaving) {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: headers,
+                method: 'PUT', headers: headers,
                 body: JSON.stringify({ agents, reports, messages })
             });
         } else {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: headers });
             const data = await res.json();
-            agents = data.record.agents || {"O5-1": {pass:"ROOT", name:"The Administrator", level:5}};
+            agents = data.record.agents || {"O5-1": {pass:"ROOT", level:5}};
             reports = data.record.reports || [];
             messages = data.record.messages || [];
         }
-    } catch (e) { 
-        console.error("Erreur Cloud:", e);
-    }
-}
-
-async function logSystem(m) {
-    try { fetch(WEBHOOK, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ content: `**[LOG SITE-01]** ${m}` }) }); } catch(e){}
+    } catch (e) { console.error("Erreur Sync:", e); }
 }
 
 async function checkLogin() {
-    const btn = document.getElementById('login-btn');
     const id = document.getElementById('user-id').value.toUpperCase();
     const ps = document.getElementById('user-pass').value;
-    btn.textContent = "SYNCHRONISATION...";
+    document.getElementById('login-btn').textContent = "SYNCHRONISATION...";
     
     await syncCloud();
-
     if(agents[id] && agents[id].pass === ps) {
         currentUser = { ...agents[id], id: id };
         document.getElementById('login-overlay').style.display = 'none';
         init();
-        logSystem(`Accès autorisé : Agent ${id}`);
-    } else { 
-        document.getElementById('login-msg').textContent = "ID OU CLÉ INVALIDE"; 
-        btn.textContent = "AUTHENTIFICATION";
+    } else {
+        document.getElementById('login-msg').textContent = "ACCÈS REFUSÉ : IDENTIFIANTS INCORRECTS";
+        document.getElementById('login-btn').textContent = "RÉESSAYER";
     }
 }
 
-// ... (Garde ton début de script identique jusqu'à la fonction init) ...
-
-async function init() {
+function init() {
     document.getElementById('display-id').textContent = currentUser.id;
-    document.getElementById('display-lvl').textContent = "LEVEL " + currentUser.level;
-    document.getElementById('prof-data').innerHTML = `<p>ID: ${currentUser.id}</p><p>NOM: ${currentUser.name}</p><p>LEVEL: ${currentUser.level}</p><p>STATUT: ACTIF</p>`;
-    
+    document.getElementById('display-lvl').textContent = "NIVEAU " + currentUser.level;
     if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
     
-    // Premier chargement
-    renderChans(); 
-    renderArchives(); 
-    refreshAgents(); 
+    updateUI();
+    // BOUCLE ACTUALISATION AUTO (5 secondes)
+    setInterval(async () => {
+        await syncCloud(false);
+        updateUI();
+    }, 5000);
+}
+
+function updateUI() {
+    renderArchives();
+    refreshAgents();
     loadMsgs();
-
-    // LANCEMENT DE L'ACTUALISATION AUTOMATIQUE (Toutes les 5 secondes)
-    setInterval(autoRefresh, 5000); 
+    renderChans();
 }
 
-// NOUVELLE FONCTION : Actualisation automatique
-async function autoRefresh() {
-    // On récupère les données sans sauvegarder
-    await syncCloud(false); 
-    
-    // On met à jour l'interface visuelle
-    loadMsgs();       // Actualise le chat
-    renderArchives(); // Actualise la liste des rapports
-    refreshAgents();  // Actualise la liste des agents
-    
-    console.log("Système actualisé : " + new Date().toLocaleTimeString());
-}
-
-// ... (Le reste de tes fonctions sendMsg, saveReport, etc. reste le même) ...
-// TERMINAL
-const termIn = document.getElementById('term-in');
-const termLog = document.getElementById('term-log');
-termIn.onkeydown = (e) => {
-    if(e.key==='Enter') {
-        const c = termIn.value.trim().toLowerCase();
-        termLog.innerHTML += `<div>root@site01:~# ${c}</div>`;
-        if(c === "help") termLog.innerHTML += "<div>status, clear, whoami</div>";
-        else if(c === "clear") termLog.innerHTML = "";
-        else if(c === "whoami") termLog.innerHTML += `<div>USER: ${currentUser.id}</div>`;
-        termIn.value = ""; termLog.scrollTop = termLog.scrollHeight;
-    }
-};
-
-// COMMS
 function renderChans() {
     const l = document.getElementById('chan-list');
     l.innerHTML = "<b>CANAUX</b><hr>";
-    ["SITE-GÉNÉRAL", "SÉCURITÉ"].forEach(c => l.innerHTML += `<div class="sidebar-btn" onclick="setChan('${c}')">${c}</div>`);
-    for(let id in agents) if(id !== currentUser.id) l.innerHTML += `<div class="sidebar-btn" onclick="setChan('${id}')">${id}</div>`;
+    ["GÉNÉRAL", "SÉCURITÉ"].forEach(c => l.innerHTML += `<div class="sidebar-btn" onclick="activeChan='${c}'; loadMsgs();">${c}</div>`);
 }
-function setChan(c) { activeChan = c; document.getElementById('chat-title').textContent = "CANAL: " + c; loadMsgs(); }
 
 async function sendMsg() {
     const i = document.getElementById('chat-in');
     if(!i.value) return;
-    messages.push({ chan: activeChan, sender: currentUser.id, text: i.value, time: new Date().toLocaleTimeString() }); 
+    messages.push({ chan: activeChan, sender: currentUser.id, text: i.value });
     await syncCloud(true);
     i.value = ""; loadMsgs();
 }
 
 function loadMsgs() {
     const log = document.getElementById('chat-log'); log.innerHTML = "";
-    messages.forEach(m => {
-        let show = (m.chan === activeChan) || (m.chan === currentUser.id && m.sender === activeChan) || (m.chan === activeChan && m.sender === currentUser.id);
-        if(show) log.innerHTML += `<div style="margin-bottom:5px; border-left:2px solid #444; padding-left:8px;"><b>${m.sender}:</b> ${m.text}</div>`;
+    document.getElementById('chat-title').textContent = "CANAL: " + activeChan;
+    messages.filter(m => m.chan === activeChan).forEach(m => {
+        log.innerHTML += `<div><b>${m.sender}:</b> ${m.text}</div>`;
     });
     log.scrollTop = log.scrollHeight;
-    if(currentUser.level >= 5) {
-        const sl = document.getElementById('spy-log');
-        sl.innerHTML = "<b>[INTERCEPTION]</b><br>";
-        messages.slice(-20).forEach(m => sl.innerHTML += `[${m.chan}] ${m.sender}: ${m.text}<br>`);
-    }
 }
 
-// ARCHIVES
 async function saveReport() {
-    const r = { item: document.getElementById('c-item').value, class: document.getElementById('c-class').value, lvl: document.getElementById('c-lvl').value || 1, img: document.getElementById('c-img').value, proc: document.getElementById('c-proc').value, desc: document.getElementById('c-desc').value, author: currentUser.id };
-    if(editReportIndex !== null) reports[editReportIndex] = r; else reports.push(r);
+    reports.push({ 
+        item: document.getElementById('c-item').value, 
+        lvl: document.getElementById('c-lvl').value, 
+        desc: document.getElementById('c-desc').value 
+    });
     await syncCloud(true);
-    document.getElementById('win-creator').style.display = 'none'; renderArchives();
+    document.getElementById('win-creator').style.display = 'none';
+    renderArchives();
 }
 
 function renderArchives() {
     const l = document.getElementById('archive-list'); l.innerHTML = "";
     reports.forEach((r, i) => {
-        l.innerHTML += `<div style="border:1px solid #333; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; background:#111;">
-            <div><b>${r.item}</b> [L${r.lvl}]</div>
-            <button class="sidebar-btn" onclick="viewReport(${i})">OUVRIR</button>
+        l.innerHTML += `<div style="border:1px solid #333; padding:10px; margin-bottom:5px; background:#111; display:flex; justify-content:space-between;">
+            <span>${r.item} [L${r.lvl}]</span>
+            <button class="sidebar-btn" onclick="viewReport(${i})">LIRE</button>
         </div>`;
     });
 }
 
 function viewReport(i) {
     const r = reports[i];
-    if(currentUser.level < r.lvl) return alert("ACCÈS REFUSÉ");
-    document.getElementById('report-viewer').innerHTML = `<div class="report-paper"><h2>${r.item}</h2><p>${r.desc}</p></div>`;
+    if(currentUser.level < r.lvl) return alert("ACCRÉDITATION INSUFFISANTE");
+    document.getElementById('report-viewer').innerHTML = `<div class="report-paper"><h1>${r.item}</h1><p>${r.desc}</p></div>`;
     document.getElementById('win-view-report').style.display = 'flex';
 }
 
-// ADMIN
 async function adminSave() {
     const id = document.getElementById('adm-id').value.toUpperCase();
-    agents[id] = { pass: document.getElementById('adm-pass').value, name: document.getElementById('adm-name').value, level: parseInt(document.getElementById('adm-lvl').value) };
-    await syncCloud(true); refreshAgents(); renderChans();
+    agents[id] = { pass: document.getElementById('adm-pass').value, level: parseInt(document.getElementById('adm-lvl').value) };
+    await syncCloud(true); refreshAgents();
 }
 
 function refreshAgents() {
     const t = document.getElementById('agent-table');
-    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th></tr>";
-    for(let id in agents) t.innerHTML += `<tr><td>${id}</td><td>${agents[id].name}</td><td>L${agents[id].level}</td></tr>`;
+    t.innerHTML = "<tr><th>AGENT</th><th>NIVEAU</th></tr>";
+    for(let id in agents) t.innerHTML += `<tr><td>${id}</td><td>L${agents[id].level}</td></tr>`;
 }
 
-// WINDOWS MGT
+// DRAG & DROP FENÊTRES
 let zIndex = 100;
 document.querySelectorAll("[data-open]").forEach(btn => btn.onclick = () => {
     const win = document.getElementById("win-" + btn.dataset.open);
     win.style.display = "flex"; win.style.zIndex = ++zIndex;
 });
 document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.close).style.display = "none");
-document.querySelectorAll(".window").forEach(win => {
-    win.querySelector(".titlebar").onmousedown = (e) => {
-        let ox = e.clientX - win.offsetLeft, oy = e.clientY - win.offsetTop;
-        win.style.zIndex = ++zIndex;
-        document.onmousemove = (ev) => { win.style.left = (ev.clientX-ox)+"px"; win.style.top = (ev.clientY-oy)+"px"; };
-        document.onmouseup = () => document.onmousemove = null;
-    };
-});
 </script>
 </body>
 </html>
