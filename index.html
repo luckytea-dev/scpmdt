@@ -155,9 +155,32 @@ function init() {
     document.getElementById('display-id').textContent = currentUser.id;
     document.getElementById('display-lvl').textContent = "LEVEL " + currentUser.level;
     document.getElementById('prof-data').innerHTML = `<p>ID: ${currentUser.id}</p><p>NOM: ${currentUser.name}</p><p>LEVEL: ${currentUser.level}</p>`;
+    
     if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
+    
+    // --- SYSTÈME D'ACTUALISATION MANUELLE ---
+    const syncBtn = document.querySelector('.header-site');
+    syncBtn.style.cursor = 'pointer';
+    syncBtn.title = "Cliquer pour actualiser manuellement";
+    syncBtn.onclick = async () => {
+        syncBtn.textContent = "SYNCHRONISATION EN COURS...";
+        syncBtn.style.color = "#0f0"; // Devient vert pendant la sync
+        await syncCloud(false);
+        updateUI();
+        setTimeout(() => {
+            syncBtn.textContent = "SCP FOUNDATION NET : SITE-██";
+            syncBtn.style.color = ""; // Reprend sa couleur normale
+        }, 2000);
+    };
+    // ----------------------------------------
+
     updateUI();
-    setInterval(async () => { await syncCloud(false); updateUI(); }, 300000); // 5 min
+    
+    // Boucle de sécurité (5 minutes)
+    setInterval(async () => { 
+        await syncCloud(false); 
+        updateUI(); 
+    }, 300000); 
 }
 
 function updateUI() { loadMsgs(); renderArchives(); refreshAgents(); renderChans(); if(currentUser.level >= 5) updateSpy(); }
