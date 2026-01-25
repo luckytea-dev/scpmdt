@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>SCP Foundation - MANUAL MDT v5.2</title>
+<title>SCP Foundation - MANUAL MDT v5.2 - OPTIMIZED</title>
 <style>
-    /* Styles identiques à votre version */
+    /* Styles identiques pour garder l'immersion */
     * { box-sizing: border-box; font-family: 'Courier New', monospace; }
-    body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; transition: background 0.5s; }
+    body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; }
     #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; }
     .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
     .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
@@ -19,27 +19,18 @@
     .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; }
     .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
     .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
-    #win-terminal .content { background: #000 !important; padding: 0 !important; display: flex; flex-direction: column; }
-    #term-log { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; line-height: 1.4; color: #0f0; }
+    #term-log { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; color: #0f0; background: #000; height: 400px; }
     .term-input-line { display: flex; padding: 15px 20px; background: #000; border-top: 1px solid #222; }
-    #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-size: 16px; font-family: inherit; }
-    .crit-error { color: #f00; background: rgba(255,0,0,0.1); padding: 15px; font-weight: bold; margin: 10px 0; border: 2px solid red; text-align: center; animation: blink 0.8s infinite; }
-    .hack-text { color: #f00; font-size: 10px; opacity: 0.6; font-style: italic; }
-    @keyframes blink { 50% { opacity: 0.5; } }
-    .report-paper { background: #fff; color: #000; padding: 40px; min-height: 100%; font-family: 'Times New Roman', serif; }
-    .report-img { max-width: 300px; float: right; border: 2px solid #000; margin-left: 20px; margin-bottom: 20px; }
-    .pre-text { white-space: pre-wrap; margin: 10px 0; }
-    .chat-container { display: flex; height: 100%; padding: 0; background: #0a0a0a; }
-    #chan-list { width: 200px; border-right: 1px solid #333; padding: 15px; overflow-y: auto; background: #0d0d0d; }
-    #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
-    .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
+    #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-family: inherit; }
     .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
+    .chat-log { height: 350px; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; }
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; border-bottom: 2px solid #444; padding: 10px; color: #f44; }
     td { padding: 10px; border-bottom: 1px solid #222; }
-    .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; margin-right: 5px; }
+    .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; }
     #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-    #sync-led { width: 8px; height: 8px; border-radius: 50%; background: #0f0; margin-left: 10px; display: inline-block; opacity: 0.3; transition: 0.2s; }
+    #sync-led { width: 8px; height: 8px; border-radius: 50%; background: #0f0; margin-left: 10px; opacity: 0.3; }
+    .report-paper { background: #fff; color: #000; padding: 40px; font-family: serif; }
 </style>
 </head>
 <body>
@@ -57,101 +48,81 @@
 
 <div id="topbar">
     <span class="header-restricted">[RESTRICTED]</span>
-    <span class="header-site">SCP FOUNDATION NET : SITE-██</span>
-    <div id="sync-led" title="Sync Status"></div>
-    <div class="header-user-info">AGENT: <span id="display-id">____</span> | CLEARANCE: <span id="display-lvl">____</span></div>
+    <span class="header-site">SCP FOUNDATION NET</span>
+    <div id="sync-led"></div>
+    <div class="header-user-info">AGENT: <span id="display-id">?</span> | LVL: <span id="display-lvl">?</span></div>
 </div>
 
 <div id="sidebar">
     <div class="sidebar-btn" data-open="profile">Dossier Personnel</div>
     <div class="sidebar-btn" data-open="documents">Archives SCP</div>
-    <div class="sidebar-btn" data-open="creator" style="color: #0f0; border-color: #0f04;">Créer un Rapport</div>
+    <div class="sidebar-btn" data-open="creator" style="color: #0f0;">Créer un Rapport</div>
     <div class="sidebar-btn" data-open="comms">Communications</div>
-    <div class="sidebar-btn" data-open="terminal">SC-OS Terminal</div>
-    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Administration</div>
-    <div class="sidebar-btn admin-only" data-open="spy" style="color:#f44; border-color:#600;">O5 - Surveillance Comms</div>
-    <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan; border-color:cyan;">Manual Sync</div>
+    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Gestion</div>
+    <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan;">Sync Cloud (Manuel)</div>
     <div class="sidebar-btn" onclick="location.reload()" style="color:#f44;">Déconnexion</div>
 </div>
 
-<div id="win-profile" class="window"><div class="titlebar"><span>FICHIER PERSONNEL</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
-<div id="win-documents" class="window" style="width:900px;"><div class="titlebar"><span>ARCHIVES SÉCURISÉES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
-<div id="win-view-report" class="window" style="width:850px; height:90vh;"><div class="titlebar"><span>LECTURE RAPPORT</span><button data-close="win-view-report">X</button></div><div class="content" id="report-viewer" style="background:#222;"></div></div>
+<div id="win-profile" class="window"><div class="titlebar"><span>PROFIL</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
+<div id="win-documents" class="window"><div class="titlebar"><span>ARCHIVES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
+<div id="win-view-report" class="window" style="z-index:1000;"><div class="titlebar"><span>LECTURE</span><button data-close="win-view-report">X</button></div><div class="content" id="report-viewer"></div></div>
 
 <div id="win-creator" class="window">
-    <div class="titlebar"><span id="creator-title">ÉDITEUR DE CONTENU</span><button data-close="win-creator">X</button></div>
+    <div class="titlebar"><span>ÉDITEUR</span><button data-close="win-creator">X</button></div>
     <div class="content">
         <input id="c-item" class="input-scp" placeholder="SCP-XXX">
         <input id="c-class" class="input-scp" placeholder="CLASSE">
-        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU ACCRÉDITATION">
-        <input id="c-img" class="input-scp" placeholder="URL IMAGE (Optionnel)">
+        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU">
         <textarea id="c-proc" class="input-scp" style="height:80px;" placeholder="PROCÉDURES"></textarea>
         <textarea id="c-desc" class="input-scp" style="height:120px;" placeholder="DESCRIPTION"></textarea>
-        <button class="sidebar-btn" style="width:100%;" onclick="saveReport()">PUBLIER SUR LE RÉSEAU</button>
+        <button class="sidebar-btn" style="width:100%;" onclick="saveReport()">PUBLIER</button>
     </div>
 </div>
 
 <div id="win-comms" class="window">
-    <div class="titlebar"><span>SYSTÈME DE MESSAGERIE</span><button data-close="win-comms">X</button></div>
-    <div class="content chat-container">
-        <div id="chan-list"></div>
-        <div id="chat-main">
-            <div id="chat-title" style="color:#f44; font-weight:bold; margin-bottom:5px;">CANAL: GÉNÉRAL</div>
-            <div id="chat-log" class="chat-log"></div>
-            <div style="display:flex; gap:10px;"><input id="chat-in" class="input-scp" placeholder="Écrire un message..."><button class="sidebar-btn" onclick="sendMsg()">ENVOYER</button></div>
-        </div>
+    <div class="titlebar"><span>MESSAGERIE</span><button data-close="win-comms">X</button></div>
+    <div class="content">
+        <div id="chat-title" style="color:#f44; font-weight:bold;">CANAL: GÉNÉRAL</div>
+        <div id="chat-log" class="chat-log"></div>
+        <div style="display:flex; gap:10px;"><input id="chat-in" class="input-scp" placeholder="Message..."><button class="sidebar-btn" onclick="sendMsg()">ENVOYER</button></div>
     </div>
 </div>
 
-<div id="win-terminal" class="window">
-    <div class="titlebar"><span>SC-OS TERMINAL v5.0.1</span><button id="term-close-btn" data-close="win-terminal">X</button></div>
+<div id="win-admin-agents" class="window">
+    <div class="titlebar"><span>ADMINISTRATION</span><button data-close="win-admin-agents">X</button></div>
     <div class="content">
-        <div id="term-log">
-            <div style="color:#888;">SC-OS v5.0.1 (SITE-LOCAL)</div><br>
-            <div>Tapez <span style="color:white; font-weight:bold;">'help'</span>.</div>
-        </div>
-        <div class="term-input-line">
-            <span id="term-prompt" style="color:#0f0">root@site-local:~#&nbsp;</span>
-            <input id="term-in" autocomplete="off">
-        </div>
-    </div>
-</div>
-
-<div id="win-admin-agents" class="window" style="width:900px;">
-    <div class="titlebar"><span>O5 - GESTION DU PERSONNEL</span><button data-close="win-admin-agents">X</button></div>
-    <div class="content">
-        <div id="admin-form" style="background:#111; padding:15px; border:1px solid #444; margin-bottom:15px; display:flex; gap:10px;">
+        <div id="admin-form" style="display:flex; gap:5px; margin-bottom:15px;">
             <input id="adm-id" class="input-scp" placeholder="ID">
             <input id="adm-pass" class="input-scp" placeholder="CLÉ">
-            <input id="adm-name" class="input-scp" placeholder="NOM COMPLET">
-            <select id="adm-lvl" class="input-scp"><option value="1">L1</option><option value="2">L2</option><option value="3">L3</option><option value="4">L4</option><option value="5">L5</option></select>
-            <button onclick="adminSave()" class="sidebar-btn" id="adm-btn">VALIDER</button>
-            <button onclick="resetAdminForm()" class="sidebar-btn" id="adm-cancel" style="display:none;">ANNULER</button>
+            <input id="adm-name" class="input-scp" placeholder="NOM">
+            <input id="adm-lvl" type="number" class="input-scp" style="width:70px;" value="1">
+            <button onclick="adminSave()" class="sidebar-btn">AJOUTER</button>
         </div>
         <table id="agent-table"></table>
     </div>
 </div>
 
-<div id="win-spy" class="window"><div class="titlebar"><span>INTERCEPTION O5</span><button data-close="win-spy">X</button></div><div class="content" id="spy-log" style="background:#000; color:#f44; font-size:12px;"></div></div>
-
 <script>
 const BIN_ID = "695497c343b1c97be90f96ce";
 const MASTER_KEY = "$2a$10$eHN8MXmITN.koPG.UViRYutQVeTRQWfLWZuBlTPvHPuhXXiG1snfq";
 
-let agents = {}, reports = [], messages = [], currentUser = null, activeChan = "SITE-GÉNÉRAL";
-let editAgentTarget = null, editReportIndex = null;
-let isBeingHacked = false, isHackRunning = false, hackStep = 0;
-let requiredCmds = ["firewall.reboot()", "purge.cache_all", "override.lock(null)", "sys.auth_reset"];
+// Données en CACHE LOCAL (RAM)
+let agents = {}, reports = [], messages = [], currentUser = null;
 
-// --- SYNC MANUELLE ---
+// SYNC : Seule fonction qui touche à l'API
 async function syncCloud(isSaving = false) {
     const led = document.getElementById('sync-led');
-    if(led) { led.style.background = isSaving ? "cyan" : "#0f0"; led.style.opacity = "1"; }
+    led.style.opacity = "1";
+    led.style.background = isSaving ? "cyan" : "#0f0";
 
     const headers = { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json", "X-Bin-Versioning": "false" };
+    
     try {
         if (isSaving) {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers, body: JSON.stringify({ agents, reports, messages }) });
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { 
+                method: 'PUT', headers, 
+                body: JSON.stringify({ agents, reports, messages }) 
+            });
         } else {
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
             const data = await res.json();
@@ -162,174 +133,112 @@ async function syncCloud(isSaving = false) {
                 updateUI();
             }
         }
-    } catch (e) { console.error("Sync Error"); }
-    if(led) setTimeout(() => led.style.opacity = "0.3", 400);
+    } catch (e) { alert("Erreur Réseau"); }
+    setTimeout(() => led.style.opacity = "0.3", 500);
 }
 
 async function checkLogin() {
     const id = document.getElementById('user-id').value.toUpperCase();
     const ps = document.getElementById('user-pass').value;
-    await syncCloud(); 
+    
+    // ON CHARGE LES DONNÉES UNE SEULE FOIS ICI
+    await syncCloud(false);
+    
     if(agents[id] && agents[id].pass === ps) {
         currentUser = { ...agents[id], id: id };
         document.getElementById('login-overlay').style.display = 'none';
-        init();
-    } else { document.getElementById('login-msg').textContent = "ID OU CLÉ INVALIDE"; }
-}
-
-async function init() {
-    document.getElementById('display-id').textContent = currentUser.id;
-    document.getElementById('display-lvl').textContent = "LEVEL " + currentUser.level;
-    document.getElementById('prof-data').innerHTML = `<h3>DOSSIER ${currentUser.id}</h3><p>NOM: ${currentUser.name}</p><p>LEVEL: ${currentUser.level}</p>`;
-    if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
-    await syncCloud(false);
-    // REMOVED: Auto-sync interval
+        document.getElementById('display-id').textContent = id;
+        document.getElementById('display-lvl').textContent = currentUser.level;
+        if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
+        updateUI();
+    } else { 
+        document.getElementById('login-msg').textContent = "ÉCHEC AUTHENTIFICATION"; 
+    }
 }
 
 function updateUI() {
+    // Rend les éléments à partir de la mémoire locale (0 requête)
     renderArchives();
     refreshAgents();
-    renderChans();
     loadMsgs();
-    if(currentUser && currentUser.level >= 5) updateSpy();
 }
 
-// --- COMMS ---
-function renderChans() {
-    const l = document.getElementById('chan-list'); if(!l) return;
-    l.innerHTML = "<b>CANAUX</b><hr>";
-    ["SITE-GÉNÉRAL", "SÉCURITÉ"].forEach(c => l.innerHTML += `<div class="sidebar-btn" onclick="activeChan='${c}'; document.getElementById('chat-title').textContent='CANAL: '+activeChan; loadMsgs();">${c}</div>`);
-    for(let id in agents) if(id !== currentUser.id) l.innerHTML += `<div class="sidebar-btn" onclick="activeChan='${id}'; document.getElementById('chat-title').textContent='PRIVÉ: '+activeChan; loadMsgs();">${id}</div>`;
+function renderArchives() {
+    const l = document.getElementById('archive-list');
+    l.innerHTML = reports.map((r, i) => `
+        <div style="border:1px solid #333; padding:10px; margin-bottom:5px; display:flex; justify-content:space-between;">
+            <span><b>${r.item}</b> [L${r.lvl}]</span>
+            <button onclick="viewReport(${i})" class="action-btn">OUVRIR</button>
+        </div>
+    `).join('');
+}
+
+function viewReport(i) {
+    const r = reports[i];
+    if(currentUser.level < r.lvl) return alert("ACCÈS REFUSÉ");
+    document.getElementById('report-viewer').innerHTML = `
+        <div class="report-paper">
+            <h2>RAPPORT SCP : ${r.item}</h2><hr>
+            <p><b>CLASSE :</b> ${r.class}</p>
+            <p><b>PROCÉDURES :</b><br>${r.proc}</p>
+            <p><b>DESCRIPTION :</b><br>${r.desc}</p>
+        </div>`;
+    document.getElementById('win-view-report').style.display = 'flex';
 }
 
 async function sendMsg() {
-    const i = document.getElementById('chat-in'); if(!i.value) return;
-    messages.push({ chan: activeChan, sender: currentUser.id, text: i.value });
-    await syncCloud(true); i.value = ""; loadMsgs();
+    const i = document.getElementById('chat-in');
+    if(!i.value) return;
+    messages.push({ sender: currentUser.id, text: i.value });
+    loadMsgs(); // Update local immédiat
+    i.value = "";
+    await syncCloud(true); // Envoi unique
 }
 
 function loadMsgs() {
-    const log = document.getElementById('chat-log'); if(!log) return;
-    log.innerHTML = "";
-    messages.filter(m => m.chan === activeChan || (m.chan === currentUser.id && m.sender === activeChan) || (m.chan === activeChan && m.sender === currentUser.id))
-            .forEach(m => log.innerHTML += `<div><b>${m.sender}:</b> ${m.text}</div>`);
+    const log = document.getElementById('chat-log');
+    log.innerHTML = messages.map(m => `<div><b>${m.sender}:</b> ${m.text}</div>`).join('');
     log.scrollTop = log.scrollHeight;
 }
 
-// --- TERMINAL ---
-const termIn = document.getElementById('term-in');
-const termLog = document.getElementById('term-log');
-
-function appendTermLog(text, color = null) {
-    const div = document.createElement('div');
-    if(color) div.style.color = color;
-    div.innerHTML = text;
-    termLog.appendChild(div);
-    termLog.scrollTop = termLog.scrollHeight;
-}
-
-termIn.onkeydown = async (e) => {
-    if(e.key === 'Enter') {
-        const input = termIn.value.trim();
-        if(!isBeingHacked && !isHackRunning) {
-            appendTermLog(`<span style="color:#aaa">> ${input}</span>`);
-            const cmd = input.toLowerCase();
-            const args = cmd.split(' ');
-            if(cmd === "help") appendTermLog("- hack [id]<br>- sync (manuelle)<br>- clear<br>- whoami");
-            else if(cmd === "clear") termLog.innerHTML = "";
-            else if(cmd === "sync") syncCloud(false);
-            else if(cmd === "whoami") appendTermLog(`ID: ${currentUser.id}`);
-            else if(args[0] === "hack") startVisualHack(args[1]);
-            else if(input !== "") appendTermLog(`Inconnu: ${input}`, "#666");
-        }
-        termIn.value = "";
-    }
-};
-
-async function startVisualHack(target) {
-    target = (target||"").toUpperCase();
-    if(!agents[target]) return appendTermLog(`Cible inconnue.`, "red");
-    isHackRunning = true;
-    appendTermLog(`INITIALISATION DU VIRUS SUR ${target}...`, "orange");
-    messages.push({ chan: target, sender: "OVERRIDE-VIRUS", text: `ATTACK` });
-    await syncCloud(true);
-    let lines = 0;
-    const intv = setInterval(() => {
-        appendTermLog(`GET_MEM_ADDR_0x${Math.random().toString(16).slice(2,8).toUpperCase()} ... [SUCCESS]`, "rgba(0,255,0,0.5)");
-        if(++lines >= 30) { clearInterval(intv); appendTermLog(`<b>ACCÈS ÉTABLI. CLÉ : ${agents[target].pass}</b>`, "cyan"); isHackRunning = false; }
-    }, 50);
-}
-
-// --- ARCHIVES & ADMIN ---
-function renderArchives() {
-    const l = document.getElementById('archive-list'); if(!l) return;
-    l.innerHTML = "";
-    reports.forEach((r, i) => {
-        l.innerHTML += `<div style="border:1px solid #333; padding:10px; margin-bottom:5px; background:#111; display:flex; justify-content:space-between; align-items:center;">
-            <span><b>${r.item}</b> [L${r.lvl}]</span>
-            <div><button onclick="viewReport(${i})" class="action-btn">LIRE</button>
-            ${currentUser.level >= 5 ? `<button onclick="editReport(${i})" class="action-btn">✎</button><button onclick="deleteReport(${i})" class="action-btn" style="color:red">✖</button>` : ''}
-            </div></div>`;
-    });
-}
-function viewReport(i) {
-    const r = reports[i];
-    if(currentUser.level < r.lvl) return alert("ACCRÉDITATION INSUFFISANTE");
-    document.getElementById('report-viewer').innerHTML = `<div class="report-paper">
-        ${r.img ? `<img src="${r.img}" class="report-img">` : ''}
-        <h2 style="text-align:center">RAPPORTS SCP SÉCURISÉS</h2><hr>
-        <p><b>DÉSIGNATION:</b> ${r.item}</p><p><b>CLASSE:</b> ${r.class}</p><hr>
-        <b>PROCÉDURES:</b><div class="pre-text">${r.proc}</div><br>
-        <b>DESCRIPTION:</b><div class="pre-text">${r.desc}</div></div>`;
-    document.getElementById('win-view-report').style.display = 'flex';
-}
-function editReport(i) {
-    editReportIndex = i; const r = reports[i];
-    document.getElementById('c-item').value = r.item; document.getElementById('c-lvl').value = r.lvl;
-    document.getElementById('c-proc').value = r.proc; document.getElementById('c-desc').value = r.desc;
-    document.getElementById('win-creator').style.display = 'flex';
-}
 async function saveReport() {
-    const r = { item: document.getElementById('c-item').value, class: document.getElementById('c-class').value, lvl: parseInt(document.getElementById('c-lvl').value) || 1, img: document.getElementById('c-img').value, proc: document.getElementById('c-proc').value, desc: document.getElementById('c-desc').value };
-    if(editReportIndex !== null) reports[editReportIndex] = r; else reports.push(r);
-    await syncCloud(true); editReportIndex = null; document.getElementById('win-creator').style.display = 'none';
+    const r = { 
+        item: document.getElementById('c-item').value, 
+        class: document.getElementById('c-class').value, 
+        lvl: parseInt(document.getElementById('c-lvl').value),
+        proc: document.getElementById('c-proc').value,
+        desc: document.getElementById('c-desc').value
+    };
+    reports.push(r);
+    renderArchives();
+    document.getElementById('win-creator').style.display = 'none';
+    await syncCloud(true);
 }
+
 async function adminSave() {
     const id = document.getElementById('adm-id').value.toUpperCase();
-    agents[id] = { pass: document.getElementById('adm-pass').value, name: document.getElementById('adm-name').value, level: parseInt(document.getElementById('adm-lvl').value) };
-    await syncCloud(true); resetAdminForm();
-}
-function refreshAgents() {
-    const t = document.getElementById('agent-table'); if(!t) return;
-    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th><th>OPS</th></tr>";
-    for(let id in agents) {
-        t.innerHTML += `<tr><td>${id}</td><td>${agents[id].name}</td><td>L${agents[id].level}</td>
-        <td><span class="action-btn" onclick="editAgent('${id}')">✎</span><span class="action-btn" style="color:red" onclick="deleteAgent('${id}')">✖</span></td></tr>`;
-    }
-}
-function resetAdminForm() { editAgentTarget = null; document.getElementById('adm-btn').textContent = "VALIDER"; document.getElementById('adm-cancel').style.display = "none"; document.getElementById('adm-id').value = ""; }
-function updateSpy() {
-    const sl = document.getElementById('spy-log'); if(!sl) return;
-    sl.innerHTML = "<b>[SURVEILLANCE O5]</b><br>";
-    messages.slice(-15).forEach(m => sl.innerHTML += `[${m.chan}] ${m.sender}: ${m.text}<br>`);
+    agents[id] = { 
+        pass: document.getElementById('adm-pass').value, 
+        name: document.getElementById('adm-name').value, 
+        level: parseInt(document.getElementById('adm-lvl').value) 
+    };
+    refreshAgents();
+    await syncCloud(true);
 }
 
-// Window logic
+function refreshAgents() {
+    const t = document.getElementById('agent-table');
+    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th></tr>" + 
+        Object.keys(agents).map(id => `<tr><td>${id}</td><td>${agents[id].name}</td><td>${agents[id].level}</td></tr>`).join('');
+}
+
+// Logic fenêtres
 let zIndex = 100;
 document.querySelectorAll("[data-open]").forEach(btn => btn.onclick = () => {
     const win = document.getElementById("win-" + btn.dataset.open);
     win.style.display = "flex"; win.style.zIndex = ++zIndex;
-    if(btn.dataset.open === "terminal") setTimeout(() => termIn.focus(), 50);
 });
 document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.close).style.display = "none");
-document.querySelectorAll(".window").forEach(win => {
-    win.querySelector(".titlebar").onmousedown = (e) => {
-        let ox = e.clientX - win.offsetLeft, oy = e.clientY - win.offsetTop;
-        win.style.zIndex = ++zIndex;
-        document.onmousemove = (ev) => { win.style.left = (ev.clientX-ox)+"px"; win.style.top = (ev.clientY-oy)+"px"; };
-        document.onmouseup = () => document.onmousemove = null;
-    };
-});
 </script>
 </body>
 </html>
