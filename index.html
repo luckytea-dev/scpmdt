@@ -2,56 +2,42 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>SCP Foundation - FULL MDT OVERRIDE v5.2</title>
+<title>SCP Foundation - MANUAL MDT v5.2</title>
 <style>
+    /* Styles identiques à votre version */
     * { box-sizing: border-box; font-family: 'Courier New', monospace; }
     body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; transition: background 0.5s; }
-
-    /* UI STRUCTURE */
     #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; }
     .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
     .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
     .header-user-info { margin-left: auto; font-size: 13px; color: #bbb; background: #1a1a1a; padding: 5px 15px; border: 1px solid #333; }
-
     #sidebar { position: absolute; top: 60px; left: 0; width: 220px; height: calc(100vh - 60px); background: #111; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
     .sidebar-btn { padding: 12px; border: 1px solid #444; background: #1a1a1a; color: #bbb; font-size: 11px; cursor: pointer; text-align: left; text-transform: uppercase; }
     .sidebar-btn:hover { background: #333; color: #fff; }
     .admin-only { display: none; border-color: #600 !important; color: #f44 !important; }
-
-    /* WINDOWS */
     .window { position: absolute; background: #0f0f0f; border: 1px solid #333; display: none; flex-direction: column; width: 850px; height: 600px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
     .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; }
     .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
     .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
-
-    /* TERMINAL */
     #win-terminal .content { background: #000 !important; padding: 0 !important; display: flex; flex-direction: column; }
     #term-log { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; line-height: 1.4; color: #0f0; }
     .term-input-line { display: flex; padding: 15px 20px; background: #000; border-top: 1px solid #222; }
     #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-size: 16px; font-family: inherit; }
-    
     .crit-error { color: #f00; background: rgba(255,0,0,0.1); padding: 15px; font-weight: bold; margin: 10px 0; border: 2px solid red; text-align: center; animation: blink 0.8s infinite; }
     .hack-text { color: #f00; font-size: 10px; opacity: 0.6; font-style: italic; }
     @keyframes blink { 50% { opacity: 0.5; } }
-
-    /* REPORT VIEW */
     .report-paper { background: #fff; color: #000; padding: 40px; min-height: 100%; font-family: 'Times New Roman', serif; }
     .report-img { max-width: 300px; float: right; border: 2px solid #000; margin-left: 20px; margin-bottom: 20px; }
     .pre-text { white-space: pre-wrap; margin: 10px 0; }
-
-    /* COMMS */
     .chat-container { display: flex; height: 100%; padding: 0; background: #0a0a0a; }
     #chan-list { width: 200px; border-right: 1px solid #333; padding: 15px; overflow-y: auto; background: #0d0d0d; }
     #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
     .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; }
-
-    /* FORMS */
     .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; border-bottom: 2px solid #444; padding: 10px; color: #f44; }
     td { padding: 10px; border-bottom: 1px solid #222; }
     .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; margin-right: 5px; }
-
     #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
     #sync-led { width: 8px; height: 8px; border-radius: 50%; background: #0f0; margin-left: 10px; display: inline-block; opacity: 0.3; transition: 0.2s; }
 </style>
@@ -84,7 +70,7 @@
     <div class="sidebar-btn" data-open="terminal">SC-OS Terminal</div>
     <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Administration</div>
     <div class="sidebar-btn admin-only" data-open="spy" style="color:#f44; border-color:#600;">O5 - Surveillance Comms</div>
-    <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan;">Sync Force</div>
+    <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan; border-color:cyan;">Manual Sync</div>
     <div class="sidebar-btn" onclick="location.reload()" style="color:#f44;">Déconnexion</div>
 </div>
 
@@ -121,8 +107,7 @@
     <div class="titlebar"><span>SC-OS TERMINAL v5.0.1</span><button id="term-close-btn" data-close="win-terminal">X</button></div>
     <div class="content">
         <div id="term-log">
-            <div style="color:#888;">SC-OS v5.0.1 (SITE-LOCAL)</div>
-            <br>
+            <div style="color:#888;">SC-OS v5.0.1 (SITE-LOCAL)</div><br>
             <div>Tapez <span style="color:white; font-weight:bold;">'help'</span>.</div>
         </div>
         <div class="term-input-line">
@@ -158,10 +143,10 @@ let editAgentTarget = null, editReportIndex = null;
 let isBeingHacked = false, isHackRunning = false, hackStep = 0;
 let requiredCmds = ["firewall.reboot()", "purge.cache_all", "override.lock(null)", "sys.auth_reset"];
 
-// --- CORE SYNC ---
+// --- SYNC MANUELLE ---
 async function syncCloud(isSaving = false) {
     const led = document.getElementById('sync-led');
-    if(led) led.style.opacity = "1";
+    if(led) { led.style.background = isSaving ? "cyan" : "#0f0"; led.style.opacity = "1"; }
 
     const headers = { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json", "X-Bin-Versioning": "false" };
     try {
@@ -178,7 +163,7 @@ async function syncCloud(isSaving = false) {
             }
         }
     } catch (e) { console.error("Sync Error"); }
-    if(led) setTimeout(() => led.style.opacity = "0.3", 200);
+    if(led) setTimeout(() => led.style.opacity = "0.3", 400);
 }
 
 async function checkLogin() {
@@ -197,11 +182,8 @@ async function init() {
     document.getElementById('display-lvl').textContent = "LEVEL " + currentUser.level;
     document.getElementById('prof-data').innerHTML = `<h3>DOSSIER ${currentUser.id}</h3><p>NOM: ${currentUser.name}</p><p>LEVEL: ${currentUser.level}</p>`;
     if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
-    
     await syncCloud(false);
-    setInterval(() => { 
-        if(!isBeingHacked && !isHackRunning) { syncCloud(false); }
-    }, 2000); 
+    // REMOVED: Auto-sync interval
 }
 
 function updateUI() {
@@ -210,7 +192,6 @@ function updateUI() {
     renderChans();
     loadMsgs();
     if(currentUser && currentUser.level >= 5) updateSpy();
-    checkInboundHack();
 }
 
 // --- COMMS ---
@@ -235,10 +216,9 @@ function loadMsgs() {
     log.scrollTop = log.scrollHeight;
 }
 
-// --- TERMINAL & DEFENSE FIXED ---
+// --- TERMINAL ---
 const termIn = document.getElementById('term-in');
 const termLog = document.getElementById('term-log');
-const termPrompt = document.getElementById('term-prompt');
 
 function appendTermLog(text, color = null) {
     const div = document.createElement('div');
@@ -255,14 +235,12 @@ termIn.onkeydown = async (e) => {
             appendTermLog(`<span style="color:#aaa">> ${input}</span>`);
             const cmd = input.toLowerCase();
             const args = cmd.split(' ');
-            if(cmd === "help") appendTermLog("- hack [id]<br>- clear<br>- whoami<br>- test-defense");
+            if(cmd === "help") appendTermLog("- hack [id]<br>- sync (manuelle)<br>- clear<br>- whoami");
             else if(cmd === "clear") termLog.innerHTML = "";
+            else if(cmd === "sync") syncCloud(false);
             else if(cmd === "whoami") appendTermLog(`ID: ${currentUser.id}`);
             else if(args[0] === "hack") startVisualHack(args[1]);
-            else if(cmd === "test-defense") triggerVictimHack();
             else if(input !== "") appendTermLog(`Inconnu: ${input}`, "#666");
-        } else if(isBeingHacked) {
-            handleDefenseInput(input);
         }
         termIn.value = "";
     }
@@ -278,74 +256,11 @@ async function startVisualHack(target) {
     let lines = 0;
     const intv = setInterval(() => {
         appendTermLog(`GET_MEM_ADDR_0x${Math.random().toString(16).slice(2,8).toUpperCase()} ... [SUCCESS]`, "rgba(0,255,0,0.5)");
-        if(++lines >= 30) { 
-            clearInterval(intv); 
-            appendTermLog(`<b>ACCÈS ÉTABLI. CLÉ : ${agents[target].pass}</b>`, "cyan"); 
-            isHackRunning = false; 
-        }
+        if(++lines >= 30) { clearInterval(intv); appendTermLog(`<b>ACCÈS ÉTABLI. CLÉ : ${agents[target].pass}</b>`, "cyan"); isHackRunning = false; }
     }, 50);
 }
 
-function checkInboundHack() {
-    if(messages.find(m => m.chan === currentUser.id && m.sender === "OVERRIDE-VIRUS") && !isBeingHacked) triggerVictimHack();
-}
-
-function triggerVictimHack() {
-    if(isBeingHacked) return;
-    isBeingHacked = true; hackStep = 0;
-    document.body.style.background = "#200";
-    document.getElementById('win-terminal').style.display = 'flex';
-    document.getElementById('term-close-btn').style.display = 'none';
-    termPrompt.style.color = "#f00";
-    termIn.style.color = "#f00";
-    
-    appendTermLog(`<div class="crit-error">!!! TENTATIVE D'INTRUSION DÉTECTÉE !!!</div>`);
-    
-    // Effet d'écriture Matrix/Hack
-    let lines = 0;
-    const hackVisual = setInterval(() => {
-        const hex = Math.random().toString(16).substring(2, 10).toUpperCase();
-        appendTermLog(`<span class="hack-text">ALERTE : VIOLATION_DE_DONNÉES :: ADDR_0x${hex} :: ACCÈS BLOQUÉ</span>`);
-        if(++lines >= 20) { 
-            clearInterval(hackVisual); 
-            showDefenseStep(); 
-        }
-    }, 60);
-}
-
-function showDefenseStep() {
-    if(hackStep < requiredCmds.length) {
-        appendTermLog(`<div style="color:yellow; font-weight:bold; margin:10px 0; border:1px dashed yellow; padding:10px;">
-            DÉFENSE REQUISE : Tapez "${requiredCmds[hackStep]}" (${hackStep+1}/${requiredCmds.length})
-        </div>`);
-    }
-}
-
-async function handleDefenseInput(input) {
-    if(input === requiredCmds[hackStep]) {
-        hackStep++;
-        appendTermLog(`[OK] Séquence ${hackStep} validée.`, "lime");
-        if(hackStep >= requiredCmds.length) {
-            isBeingHacked = false;
-            document.body.style.background = "#0a0a0a";
-            document.getElementById('term-close-btn').style.display = 'block';
-            termPrompt.style.color = "#0f0";
-            termIn.style.color = "#0f0";
-            appendTermLog(`<div style="color:cyan; font-weight:bold; border:2px solid cyan; padding:10px; margin-top:10px; text-align:center;">
-                SYSTÈME SÉCURISÉ. INTRUSION REPOUSSÉE.
-            </div>`);
-            // Nettoyage des messages de hack pour arrêter l'attaque
-            messages = messages.filter(m => !(m.chan === currentUser.id && m.sender === "OVERRIDE-VIRUS"));
-            await syncCloud(true);
-        } else {
-            showDefenseStep();
-        }
-    } else {
-        appendTermLog(`[ERREUR] COMMANDE INCORRECTE.`, "red");
-    }
-}
-
-// --- ARCHIVES ---
+// --- ARCHIVES & ADMIN ---
 function renderArchives() {
     const l = document.getElementById('archive-list'); if(!l) return;
     l.innerHTML = "";
@@ -392,13 +307,6 @@ function refreshAgents() {
         <td><span class="action-btn" onclick="editAgent('${id}')">✎</span><span class="action-btn" style="color:red" onclick="deleteAgent('${id}')">✖</span></td></tr>`;
     }
 }
-function editAgent(id) {
-    editAgentTarget = id; const a = agents[id];
-    document.getElementById('adm-id').value = id; document.getElementById('adm-pass').value = a.pass;
-    document.getElementById('adm-name').value = a.name; document.getElementById('adm-lvl').value = a.level;
-    document.getElementById('adm-btn').textContent = "MODIFIER"; document.getElementById('adm-cancel').style.display = "block";
-}
-async function deleteAgent(id) { if(id!=="O5-1" && confirm("Supprimer?")) { delete agents[id]; await syncCloud(true); } }
 function resetAdminForm() { editAgentTarget = null; document.getElementById('adm-btn').textContent = "VALIDER"; document.getElementById('adm-cancel').style.display = "none"; document.getElementById('adm-id').value = ""; }
 function updateSpy() {
     const sl = document.getElementById('spy-log'); if(!sl) return;
@@ -421,7 +329,6 @@ document.querySelectorAll(".window").forEach(win => {
         document.onmousemove = (ev) => { win.style.left = (ev.clientX-ox)+"px"; win.style.top = (ev.clientY-oy)+"px"; };
         document.onmouseup = () => document.onmousemove = null;
     };
-    win.onclick = () => { if(win.id === "win-terminal") termIn.focus(); };
 });
 </script>
 </body>
