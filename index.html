@@ -2,40 +2,57 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>SCP Foundation - MANUAL MDT v5.2 - FULL OPTIMIZED</title>
+<title>SCP Foundation - MDT v5.3 - FULL STABLE</title>
 <style>
-    /* STYLES COMPLETS REPRIS */
+    /* STYLES GLOBAUX */
     * { box-sizing: border-box; font-family: 'Courier New', monospace; }
     body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; }
+    
     #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; }
     .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
     .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
     .header-user-info { margin-left: auto; font-size: 13px; color: #bbb; background: #1a1a1a; padding: 5px 15px; border: 1px solid #333; }
+    
     #sidebar { position: absolute; top: 60px; left: 0; width: 220px; height: calc(100vh - 60px); background: #111; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
     .sidebar-btn { padding: 12px; border: 1px solid #444; background: #1a1a1a; color: #bbb; font-size: 11px; cursor: pointer; text-align: left; text-transform: uppercase; }
     .sidebar-btn:hover { background: #333; color: #fff; }
     .admin-only { display: none; border-color: #600 !important; color: #f44 !important; }
+
+    /* FENETRES */
     .window { position: absolute; background: #0f0f0f; border: 1px solid #333; display: none; flex-direction: column; width: 850px; height: 600px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
-    .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; }
+    .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; user-select: none; }
     .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
     .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
-    #term-log { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; color: #0f0; background: #000; }
-    .term-input-line { display: flex; padding: 15px 20px; background: #000; border-top: 1px solid #222; }
-    #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-size: 16px; font-family: inherit; }
+
+    /* FORMULAIRES */
     .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
-    .chat-container { display: flex; height: 100%; padding: 0; background: #0a0a0a; }
-    #chan-list { width: 200px; border-right: 1px solid #333; padding: 15px; background: #0d0d0d; }
-    #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
-    .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; }
+    .input-scp:focus { border-color: #888; }
+    
+    /* ARCHIVES & TABLES */
     table { width: 100%; border-collapse: collapse; }
     th { text-align: left; border-bottom: 2px solid #444; padding: 10px; color: #f44; }
     td { padding: 10px; border-bottom: 1px solid #222; }
     .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; margin-right: 5px; }
+
+    /* DESIGN RAPPORT PAPIER */
+    .report-paper { 
+        background: #fff; color: #000; padding: 60px; font-family: 'Times New Roman', serif; 
+        width: 21cm; min-height: 29.7cm; margin: 20px auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); 
+    }
+    .report-img { max-width: 280px; float: right; border: 2px solid #000; margin-left: 20px; }
+    .pre-text { white-space: pre-wrap; font-size: 1.1em; margin-top: 10px; }
+
+    /* CHAT & TERMINAL */
+    .chat-container { display: flex; height: 100%; padding: 0; background: #0a0a0a; }
+    #chan-list { width: 180px; border-right: 1px solid #333; padding: 15px; background: #0d0d0d; }
+    #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
+    .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; }
+    #term-log { flex: 1; padding: 20px; overflow-y: auto; color: #0f0; background: #000; }
+    .term-input-line { display: flex; padding: 15px; background: #000; border-top: 1px solid #222; }
+    #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-family: inherit; }
+
     #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
     #sync-led { width: 8px; height: 8px; border-radius: 50%; background: #0f0; margin-left: 10px; opacity: 0.3; }
-    .report-paper { background: #fff; color: #000; padding: 40px; font-family: 'Times New Roman', serif; }
-    .report-img { max-width: 300px; float: right; border: 2px solid #000; margin-left: 20px; }
-    .pre-text { white-space: pre-wrap; }
 </style>
 </head>
 <body>
@@ -61,76 +78,65 @@
 <div id="sidebar">
     <div class="sidebar-btn" data-open="profile">Dossier Personnel</div>
     <div class="sidebar-btn" data-open="documents">Archives SCP</div>
-    <div class="sidebar-btn" data-open="creator" style="color:#0f0;">Créer Rapport</div>
+    <div class="sidebar-btn" data-open="creator" onclick="prepareCreate()" style="color:#0f0;">Créer Rapport</div>
     <div class="sidebar-btn" data-open="comms">Communications</div>
     <div class="sidebar-btn" data-open="terminal">SC-OS Terminal</div>
-    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Administration</div>
+    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Gestion Personnel</div>
     <div class="sidebar-btn admin-only" data-open="spy" style="color:#f44;">O5 - Surveillance</div>
     <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan;">Sync Cloud</div>
     <div class="sidebar-btn" onclick="location.reload()" style="color:#f44;">Déconnexion</div>
 </div>
 
-<div id="win-profile" class="window"><div class="titlebar"><span>FICHIER</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
-<div id="win-documents" class="window" style="width:900px;"><div class="titlebar"><span>ARCHIVES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
-<div id="win-view-report" class="window" style="width:850px; height:90vh;"><div class="titlebar"><span>LECTURE</span><button data-close="win-view-report">X</button></div><div class="content" id="report-viewer" style="background:#222;"></div></div>
+<div id="win-profile" class="window"><div class="titlebar"><span>DOSSIER PERSONNEL</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
+<div id="win-documents" class="window" style="width:900px;"><div class="titlebar"><span>ARCHIVES SÉCURISÉES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
+
+<div id="win-view-report" class="window" style="width:950px; height:90vh;">
+    <div class="titlebar"><span>LECTURE ARCHIVE</span><button data-close="win-view-report">X</button></div>
+    <div class="content" id="report-viewer" style="background:#333; padding:0;"></div>
+</div>
 
 <div id="win-creator" class="window">
     <div class="titlebar"><span id="creator-title">ÉDITEUR</span><button data-close="win-creator">X</button></div>
     <div class="content">
-        <input id="c-item" class="input-scp" placeholder="SCP-XXX">
-        <input id="c-class" class="input-scp" placeholder="CLASSE">
-        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU">
+        <input id="c-item" class="input-scp" placeholder="ID (ex: SCP-001)">
+        <input id="c-class" class="input-scp" placeholder="CLASSE D'OBJET">
+        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU REQUIS">
         <input id="c-img" class="input-scp" placeholder="URL IMAGE">
-        <textarea id="c-proc" class="input-scp" style="height:80px;" placeholder="PROCÉDURES"></textarea>
-        <textarea id="c-desc" class="input-scp" style="height:120px;" placeholder="DESCRIPTION"></textarea>
-        <button class="sidebar-btn" style="width:100%;" onclick="saveReport()">PUBLIER</button>
-    </div>
-</div>
-
-<div id="win-comms" class="window">
-    <div class="titlebar"><span>MESSAGERIE</span><button data-close="win-comms">X</button></div>
-    <div class="content chat-container">
-        <div id="chan-list"></div>
-        <div id="chat-main">
-            <div id="chat-title" style="color:#f44; font-weight:bold;">CANAL: GÉNÉRAL</div>
-            <div id="chat-log" class="chat-log"></div>
-            <div style="display:flex; gap:10px;"><input id="chat-in" class="input-scp" placeholder="Écrire..."><button class="sidebar-btn" onclick="sendMsg()">ENVOYER</button></div>
-        </div>
-    </div>
-</div>
-
-<div id="win-terminal" class="window">
-    <div class="titlebar"><span>TERMINAL v5.0.1</span><button data-close="win-terminal">X</button></div>
-    <div class="content" style="background:#000; padding:0; display:flex; flex-direction:column;">
-        <div id="term-log"></div>
-        <div class="term-input-line"><span style="color:#0f0">root@site-local:~#&nbsp;</span><input id="term-in" autocomplete="off"></div>
+        <textarea id="c-proc" class="input-scp" style="height:100px;" placeholder="PROCÉDURES DE CONFINEMENT"></textarea>
+        <textarea id="c-desc" class="input-scp" style="height:150px;" placeholder="DESCRIPTION"></textarea>
+        <button class="sidebar-btn" style="width:100%; border-color:#0f0;" onclick="saveReport()">VALIDER ET PUBLIER</button>
     </div>
 </div>
 
 <div id="win-admin-agents" class="window" style="width:900px;">
-    <div class="titlebar"><span>O5 - GESTION</span><button data-close="win-admin-agents">X</button></div>
+    <div class="titlebar"><span>O5 - ADMINISTRATION DU PERSONNEL</span><button data-close="win-admin-agents">X</button></div>
     <div class="content">
-        <div style="display:flex; gap:5px; margin-bottom:15px;">
-            <input id="adm-id" class="input-scp" placeholder="ID">
-            <input id="adm-pass" class="input-scp" placeholder="CLÉ">
-            <input id="adm-name" class="input-scp" placeholder="NOM">
-            <select id="adm-lvl" class="input-scp" style="width:80px;"><option value="1">L1</option><option value="2">L2</option><option value="3">L3</option><option value="4">L4</option><option value="5">L5</option></select>
-            <button onclick="adminSave()" class="sidebar-btn">VALIDER</button>
+        <div style="background:#1a1a1a; padding:15px; border:1px solid #333; margin-bottom:20px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input id="adm-id" class="input-scp" placeholder="ID AGENT">
+                <input id="adm-pass" class="input-scp" placeholder="CLÉ SÉCURITÉ">
+                <input id="adm-name" class="input-scp" placeholder="NOM COMPLET">
+                <select id="adm-lvl" class="input-scp" style="width:120px;"><option value="1">LVL 1</option><option value="2">LVL 2</option><option value="3">LVL 3</option><option value="4">LVL 4</option><option value="5">LVL 5</option></select>
+            </div>
+            <button onclick="adminSave()" class="sidebar-btn" style="width:100%; border-color:cyan;">SAUVEGARDER / MODIFIER AGENT</button>
         </div>
         <table id="agent-table"></table>
     </div>
 </div>
 
-<div id="win-spy" class="window"><div class="titlebar"><span>INTERCEPTION O5</span><button data-close="win-spy">X</button></div><div class="content" id="spy-log" style="background:#000; color:#f44; font-size:12px;"></div></div>
+<div id="win-comms" class="window"><div class="titlebar"><span>MESSAGERIE</span><button data-close="win-comms">X</button></div><div class="content chat-container"><div id="chan-list"></div><div id="chat-main"><div id="chat-title" style="color:#f44; font-weight:bold;">CANAL: GÉNÉRAL</div><div id="chat-log" class="chat-log"></div><div style="display:flex; gap:10px;"><input id="chat-in" class="input-scp" placeholder="Message..."><button class="sidebar-btn" onclick="sendMsg()">ENVOYER</button></div></div></div></div>
+<div id="win-terminal" class="window"><div class="titlebar"><span>SC-OS TERMINAL</span><button data-close="win-terminal">X</button></div><div class="content" style="background:#000; padding:0; display:flex; flex-direction:column;"><div id="term-log"></div><div class="term-input-line"><span style="color:#0f0">root@foundation:~#&nbsp;</span><input id="term-in" autocomplete="off"></div></div></div>
+<div id="win-spy" class="window"><div class="titlebar"><span>O5 - SURVEILLANCE</span><button data-close="win-spy">X</button></div><div class="content" id="spy-log" style="background:#000; color:#f44; font-size:12px;"></div></div>
 
 <script>
 const BIN_ID = "695497c343b1c97be90f96ce";
 const MASTER_KEY = "$2a$10$eHN8MXmITN.koPG.UViRYutQVeTRQWfLWZuBlTPvHPuhXXiG1snfq";
 
 let agents = {}, reports = [], messages = [], currentUser = null, activeChan = "SITE-GÉNÉRAL";
-let isHackRunning = false, editReportIndex = null;
+let editReportIndex = null;
+let editAgentId = null;
 
-// --- CORE SYNC ---
+// --- SYNC ---
 async function syncCloud(isSaving = false) {
     const led = document.getElementById('sync-led');
     led.style.opacity = "1"; led.style.background = isSaving ? "cyan" : "#0f0";
@@ -148,7 +154,7 @@ async function syncCloud(isSaving = false) {
                 updateUI();
             }
         }
-    } catch (e) { console.error("Sync fail"); }
+    } catch (e) { console.error("Sync Error"); }
     setTimeout(() => led.style.opacity = "0.3", 500);
 }
 
@@ -161,13 +167,13 @@ async function checkLogin() {
         currentUser = { ...agents[id], id: id };
         document.getElementById('login-overlay').style.display = 'none';
         initSession();
-    } else { document.getElementById('login-msg').textContent = "ID/PASS INVALIDE"; }
+    } else { document.getElementById('login-msg').textContent = "IDENTIFICATION ÉCHOUÉE"; }
 }
 
 function initSession() {
     document.getElementById('display-id').textContent = currentUser.id;
     document.getElementById('display-lvl').textContent = currentUser.level;
-    document.getElementById('prof-data').innerHTML = `<h3>DOSSIER ${currentUser.id}</h3><p>NOM: ${currentUser.name}</p><p>NIVEAU: ${currentUser.level}</p>`;
+    document.getElementById('prof-data').innerHTML = `<h3>DOSSIER ACCRÉDITÉ : ${currentUser.id}</h3><hr><p>NOM : ${currentUser.name}</p><p>NIVEAU D'ACCRÉDITATION : ${currentUser.level}</p><p>STATUT : ACTIF</p>`;
     if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
     updateUI();
 }
@@ -180,15 +186,15 @@ function updateUI() {
     if(currentUser?.level >= 5) updateSpy();
 }
 
-// --- ARCHIVES ---
+// --- ARCHIVES SCP ---
 function renderArchives() {
     const l = document.getElementById('archive-list'); if(!l) return;
     l.innerHTML = reports.map((r, i) => `
-        <div style="border:1px solid #333; padding:10px; margin-bottom:5px; background:#111; display:flex; justify-content:space-between; align-items:center;">
-            <span><b>${r.item}</b> [L${r.lvl}] - ${r.class}</span>
+        <div style="border:1px solid #333; padding:12px; margin-bottom:8px; background:#111; display:flex; justify-content:space-between; align-items:center;">
+            <span><b style="color:white">[${r.item}]</b> - ${r.class} (Niv.${r.lvl})</span>
             <div>
                 <button onclick="viewReport(${i})" class="action-btn">LIRE</button>
-                ${currentUser.level >= 5 ? `<button onclick="editReport(${i})" class="action-btn">✎</button><button onclick="deleteReport(${i})" class="action-btn" style="color:red">✖</button>` : ''}
+                ${currentUser.level >= 5 ? `<button onclick="editReport(${i})" class="action-btn" style="color:cyan">✎</button><button onclick="deleteReport(${i})" class="action-btn" style="color:red">✖</button>` : ''}
             </div>
         </div>`).join('');
 }
@@ -198,32 +204,97 @@ function viewReport(i) {
     if(currentUser.level < r.lvl) return alert("ACCRÉDITATION INSUFFISANTE");
     document.getElementById('report-viewer').innerHTML = `
         <div class="report-paper">
+            <h1 style="text-align:center; border-bottom:3px solid black; padding-bottom:10px;">RAPPORT DE CONFINEMENT SCP</h1>
+            <p><b>OBJET # :</b> ${r.item}</p>
+            <p><b>CLASSE :</b> ${r.class}</p>
+            <p><b>ACCRÉDITATION :</b> NIVEAU ${r.lvl}</p>
+            <hr>
             ${r.img ? `<img src="${r.img}" class="report-img">` : ''}
-            <h2 style="text-align:center">ARCHIVE SÉCURISÉE SITE-██</h2><hr>
-            <p><b>ITEM:</b> ${r.item}</p><p><b>CLASSE:</b> ${r.class}</p><hr>
-            <b>PROCÉDURES:</b><div class="pre-text">${r.proc}</div><br>
-            <b>DESCRIPTION:</b><div class="pre-text">${r.desc}</div>
+            <h3>PROCÉDURES DE CONFINEMENT :</h3>
+            <div class="pre-text">${r.proc}</div>
+            <br>
+            <h3>DESCRIPTION :</h3>
+            <div class="pre-text">${r.desc}</div>
+            <div style="margin-top:100px; text-align:center; opacity:0.3; font-size:10px;">PROPERTY OF SCP FOUNDATION - DO NOT DUPLICATE</div>
         </div>`;
     document.getElementById('win-view-report').style.display = 'flex';
 }
 
+function prepareCreate() {
+    editReportIndex = null;
+    document.getElementById('creator-title').textContent = "CRÉER NOUVEAU RAPPORT";
+    document.querySelectorAll('#win-creator .input-scp').forEach(i => i.value = "");
+}
+
+function editReport(i) {
+    const r = reports[i];
+    editReportIndex = i;
+    document.getElementById('c-item').value = r.item;
+    document.getElementById('c-class').value = r.class;
+    document.getElementById('c-lvl').value = r.lvl;
+    document.getElementById('c-img').value = r.img;
+    document.getElementById('c-proc').value = r.proc;
+    document.getElementById('c-desc').value = r.desc;
+    document.getElementById('creator-title').textContent = "MODIFICATION : " + r.item;
+    document.getElementById('win-creator').style.display = 'flex';
+}
+
 async function saveReport() {
-    const r = { 
-        item: document.getElementById('c-item').value, 
-        class: document.getElementById('c-class').value, 
-        lvl: parseInt(document.getElementById('c-lvl').value) || 1, 
-        img: document.getElementById('c-img').value, 
-        proc: document.getElementById('c-proc').value, 
-        desc: document.getElementById('c-desc').value 
-    };
+    const r = { item: document.getElementById('c-item').value, class: document.getElementById('c-class').value, lvl: parseInt(document.getElementById('c-lvl').value) || 1, img: document.getElementById('c-img').value, proc: document.getElementById('c-proc').value, desc: document.getElementById('c-desc').value };
     if(editReportIndex !== null) reports[editReportIndex] = r; else reports.push(r);
     renderArchives();
     document.getElementById('win-creator').style.display = 'none';
-    editReportIndex = null;
     await syncCloud(true);
 }
 
-// --- COMMS ---
+async function deleteReport(i) {
+    if(confirm("Confirmer suppression archive ?")) { reports.splice(i, 1); renderArchives(); await syncCloud(true); }
+}
+
+// --- GESTION AGENTS (FIXED EDIT) ---
+async function adminSave() {
+    const id = document.getElementById('adm-id').value.toUpperCase();
+    const pass = document.getElementById('adm-pass').value;
+    const name = document.getElementById('adm-name').value;
+    const level = parseInt(document.getElementById('adm-lvl').value);
+
+    if(!id || !pass) return alert("ID et MOT DE PASSE requis");
+
+    // Si on modifiait un agent et que son ID a changé
+    if(editAgentId && editAgentId !== id) delete agents[editAgentId];
+
+    agents[id] = { pass, name, level };
+    
+    // Reset
+    editAgentId = null;
+    document.querySelectorAll('#win-admin-agents .input-scp').forEach(i => i.value = "");
+    refreshAgents();
+    await syncCloud(true);
+}
+
+function editAgent(id) {
+    const a = agents[id];
+    editAgentId = id;
+    document.getElementById('adm-id').value = id;
+    document.getElementById('adm-pass').value = a.pass;
+    document.getElementById('adm-name').value = a.name;
+    document.getElementById('adm-lvl').value = a.level;
+}
+
+async function deleteAgent(id) {
+    if(confirm("Supprimer l'agent " + id + " ?")) { delete agents[id]; refreshAgents(); await syncCloud(true); }
+}
+
+function refreshAgents() {
+    const t = document.getElementById('agent-table'); if(!t) return;
+    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th><th>ACTIONS</th></tr>" + 
+        Object.keys(agents).map(id => `<tr><td>${id}</td><td>${agents[id].name}</td><td>L${agents[id].level}</td><td>
+            <button onclick="editAgent('${id}')" style="color:cyan; border:none; background:none; cursor:pointer;">✎</button>
+            <button onclick="deleteAgent('${id}')" style="color:red; border:none; background:none; cursor:pointer; margin-left:10px;">✖</button>
+        </td></tr>`).join('');
+}
+
+// --- MESSAGERIE & TERMINAL ---
 function renderChans() {
     const l = document.getElementById('chan-list'); if(!l) return;
     let html = "<b>CANAUX</b><hr>";
@@ -232,98 +303,51 @@ function renderChans() {
     for(let id in agents) if(id !== currentUser.id) html += `<div class="sidebar-btn" onclick="setChan('${id}')">${id}</div>`;
     l.innerHTML = html;
 }
-
-function setChan(c) {
-    activeChan = c;
-    document.getElementById('chat-title').textContent = (agents[c] ? "PRIVÉ: " : "CANAL: ") + c;
-    loadMsgs();
-}
-
+function setChan(c) { activeChan = c; document.getElementById('chat-title').textContent = "CANAL: " + c; loadMsgs(); }
 async function sendMsg() {
     const i = document.getElementById('chat-in'); if(!i.value) return;
     messages.push({ chan: activeChan, sender: currentUser.id, text: i.value });
-    loadMsgs(); i.value = "";
-    await syncCloud(true);
+    loadMsgs(); i.value = ""; await syncCloud(true);
 }
-
 function loadMsgs() {
     const log = document.getElementById('chat-log'); if(!log) return;
-    log.innerHTML = messages
-        .filter(m => m.chan === activeChan || (m.chan === currentUser.id && m.sender === activeChan) || (m.chan === activeChan && m.sender === currentUser.id))
+    log.innerHTML = messages.filter(m => m.chan === activeChan || (m.chan === currentUser.id && m.sender === activeChan) || (m.chan === activeChan && m.sender === currentUser.id))
         .map(m => `<div><b style="color:${m.sender===currentUser.id?'#0f0':'#f44'}">${m.sender}:</b> ${m.text}</div>`).join('');
     log.scrollTop = log.scrollHeight;
 }
+function updateSpy() {
+    const s = document.getElementById('spy-log');
+    s.innerHTML = "<b>[TRAFFIC MONITOR]</b><br>" + messages.slice(-20).map(m => `[${m.chan}] ${m.sender}: ${m.text}`).join('<br>');
+}
 
-// --- TERMINAL & HACK ---
+// TERMINAL
 const termIn = document.getElementById('term-in');
 const termLog = document.getElementById('term-log');
-
 termIn.onkeydown = (e) => {
     if(e.key === 'Enter') {
-        const cmd = termIn.value.trim().toLowerCase();
-        const args = cmd.split(' ');
+        const val = termIn.value.trim().toLowerCase();
         const line = document.createElement('div');
         line.innerHTML = `<span style="color:#666">> ${termIn.value}</span>`;
         termLog.appendChild(line);
-
-        if(cmd === "help") line.innerHTML += `<br>- hack [id]<br>- sync<br>- clear<br>- whoami`;
-        else if(cmd === "whoami") line.innerHTML += `<br>ID: ${currentUser.id} | LVL: ${currentUser.level}`;
-        else if(cmd === "clear") termLog.innerHTML = "";
-        else if(cmd === "sync") syncCloud(false);
-        else if(args[0] === "hack") startHack(args[1]);
-        
-        termIn.value = "";
-        termLog.scrollTop = termLog.scrollHeight;
+        if(val === "help") line.innerHTML += `<br>- hack [id]<br>- clear<br>- sync`;
+        else if(val === "clear") termLog.innerHTML = "";
+        else if(val === "sync") syncCloud(false);
+        else if(val.startsWith("hack ")) {
+            let target = val.split(' ')[1].toUpperCase();
+            if(agents[target]) line.innerHTML += `<br><span style="color:cyan">DECRYPTING ${target}... PASS: ${agents[target].pass}</span>`;
+            else line.innerHTML += `<br>ID NOT FOUND`;
+        }
+        termIn.value = ""; termLog.scrollTop = termLog.scrollHeight;
     }
 }
 
-function startHack(target) {
-    target = (target||"").toUpperCase();
-    if(!agents[target]) return termLog.innerHTML += `<div style="color:red">ERREUR: Cible ${target} introuvable.</div>`;
-    isHackRunning = true;
-    let i = 0;
-    const intv = setInterval(() => {
-        const l = document.createElement('div');
-        l.style.color = "rgba(0,255,0,0.5)";
-        l.textContent = `DECRYPTING_SECTOR_0x${Math.random().toString(16).slice(2,8)}... OK`;
-        termLog.appendChild(l);
-        termLog.scrollTop = termLog.scrollHeight;
-        if(++i > 20) {
-            clearInterval(intv);
-            termLog.innerHTML += `<div style="color:cyan"><b>ACCÈS RÉUSSI. CLÉ DE ${target} : ${agents[target].pass}</b></div>`;
-            isHackRunning = false;
-        }
-    }, 50);
-}
-
-// --- ADMIN ---
-async function adminSave() {
-    const id = document.getElementById('adm-id').value.toUpperCase();
-    agents[id] = { pass: document.getElementById('adm-pass').value, name: document.getElementById('adm-name').value, level: parseInt(document.getElementById('adm-lvl').value) };
-    refreshAgents();
-    await syncCloud(true);
-}
-
-function refreshAgents() {
-    const t = document.getElementById('agent-table'); if(!t) return;
-    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th><th>OP</th></tr>" + 
-        Object.keys(agents).map(id => `<tr><td>${id}</td><td>${agents[id].name}</td><td>L${agents[id].level}</td><td><button onclick="deleteAgent('${id}')" style="color:red; background:none; border:none; cursor:pointer;">✖</button></td></tr>`).join('');
-}
-
-function updateSpy() {
-    const s = document.getElementById('spy-log');
-    s.innerHTML = "<b>[TRAFFIC MONITOR]</b><br>" + messages.slice(-15).map(m => `[${m.chan}] ${m.sender}: ${m.text}`).join('<br>');
-}
-
-// --- DRAG & WINDOWS ---
+// --- FENETRES DRAG & CLOSE ---
 let zIndex = 100;
 document.querySelectorAll("[data-open]").forEach(btn => btn.onclick = () => {
     const win = document.getElementById("win-" + btn.dataset.open);
     win.style.display = "flex"; win.style.zIndex = ++zIndex;
-    if(btn.dataset.open === "terminal") setTimeout(()=>termIn.focus(), 100);
 });
 document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.close).style.display = "none");
-
 document.querySelectorAll(".window").forEach(win => {
     win.querySelector(".titlebar").onmousedown = (e) => {
         let ox = e.clientX - win.offsetLeft, oy = e.clientY - win.offsetTop;
