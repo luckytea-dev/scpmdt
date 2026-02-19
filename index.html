@@ -1,361 +1,1267 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>SCP Foundation - MDT v5.3 - FULL STABLE</title>
-<style>
-    /* STYLES GLOBAUX */
-    * { box-sizing: border-box; font-family: 'Courier New', monospace; }
-    body { margin: 0; background: #0a0a0a; color: #dcdcdc; overflow: hidden; height: 100vh; }
-    
-    #topbar { height: 60px; background: #111; border-bottom: 2px solid #444; display: flex; align-items: center; padding: 0 25px; }
-    .header-restricted { color: #f44; font-weight: bold; margin-right: 15px; }
-    .header-site { color: #888; border-left: 1px solid #444; padding-left: 15px; }
-    .header-user-info { margin-left: auto; font-size: 13px; color: #bbb; background: #1a1a1a; padding: 5px 15px; border: 1px solid #333; }
-    
-    #sidebar { position: absolute; top: 60px; left: 0; width: 220px; height: calc(100vh - 60px); background: #111; border-right: 2px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-    .sidebar-btn { padding: 12px; border: 1px solid #444; background: #1a1a1a; color: #bbb; font-size: 11px; cursor: pointer; text-align: left; text-transform: uppercase; }
-    .sidebar-btn:hover { background: #333; color: #fff; }
-    .admin-only { display: none; border-color: #600 !important; color: #f44 !important; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.P.I.N. – Secure Protocol Interface Network (Connected)</title>
+    <style>
+        :root {
+            --taskbar-bg: rgba(10, 10, 10, 0.95);
+            --win-blue: #0078d4;
+            --win-hover: rgba(255, 255, 255, 0.1);
+            --win-bg: rgba(255, 255, 255, 0.98);
+            --danger: #ff3333;
+            --terminal-green: #00ff41;
+            --scp-border: rgba(255, 255, 255, 0.2);
+        }
 
-    /* FENETRES */
-    .window { position: absolute; background: #0f0f0f; border: 1px solid #333; display: none; flex-direction: column; width: 850px; height: 600px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
-    .titlebar { background: #222; padding: 10px 15px; font-size: 13px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; cursor: move; color: #fff; user-select: none; }
-    .titlebar button { background: #400; border: none; color: #fff; cursor: pointer; padding: 4px 10px; }
-    .content { padding: 20px; font-size: 14px; overflow-y: auto; flex: 1; }
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: url('scp3.jpg') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #0a0a0a;
+            transition: background 0.5s ease-in-out;
+        }
 
-    /* FORMULAIRES */
-    .input-scp { background: #111; border: 1px solid #444; color: #fff; padding: 10px; width: 100%; margin-bottom: 10px; outline: none; }
-    .input-scp:focus { border-color: #888; }
-    
-    /* ARCHIVES & TABLES */
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; border-bottom: 2px solid #444; padding: 10px; color: #f44; }
-    td { padding: 10px; border-bottom: 1px solid #222; }
-    .action-btn { cursor: pointer; padding: 4px 8px; background: #222; border: 1px solid #444; color: #fff; margin-right: 5px; }
+        /* --- ÉCRAN DE CONNEXION --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #d1d1d1;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 0);
+            background-size: 20px 20px;
+            z-index: 9999999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #222; font-family: "Courier New", Courier, monospace;
+        }
 
-    /* DESIGN RAPPORT PAPIER */
-    .report-paper { 
-        background: #fff; color: #000; padding: 60px; font-family: 'Times New Roman', serif; 
-        width: 21cm; min-height: 29.7cm; margin: 20px auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); 
-    }
-    .report-img { max-width: 280px; float: right; border: 2px solid #000; margin-left: 20px; }
-    .pre-text { white-space: pre-wrap; font-size: 1.1em; margin-top: 10px; }
+        #login-overlay::after {
+            content: ""; position: absolute; right: -100px; bottom: -100px;
+            width: 700px; height: 700px;
+            background-image: url('https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png');
+            background-size: contain; background-repeat: no-repeat;
+            opacity: 0.08; filter: grayscale(1) contrast(1.2); pointer-events: none;
+        }
 
-    /* CHAT & TERMINAL */
-    .chat-container { display: flex; height: 100%; padding: 0; background: #0a0a0a; }
-    #chan-list { width: 180px; border-right: 1px solid #333; padding: 15px; background: #0d0d0d; }
-    #chat-main { flex: 1; display: flex; flex-direction: column; padding: 15px; }
-    .chat-log { flex: 1; background: #000; border: 1px solid #222; padding: 10px; overflow-y: auto; margin-bottom: 10px; }
-    #term-log { flex: 1; padding: 20px; overflow-y: auto; color: #0f0; background: #000; }
-    .term-input-line { display: flex; padding: 15px; background: #000; border-top: 1px solid #222; }
-    #term-in { background: transparent; border: none; color: #0f0; flex: 1; outline: none; font-family: inherit; }
+        .scanline {
+            width: 100%; height: 100px; z-index: 10000000;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1; position: absolute; bottom: 100%; animation: scanline 8s linear infinite; pointer-events: none;
+        }
+        @keyframes scanline { 0% { bottom: 100%; } 100% { bottom: -100%; } }
 
-    #login-overlay { position: fixed; inset: 0; background: #050505; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-    #sync-led { width: 8px; height: 8px; border-radius: 50%; background: #0f0; margin-left: 10px; opacity: 0.3; }
-</style>
+        .top-header { text-align: center; margin-bottom: 40px; z-index: 1; }
+        .top-header img { width: 120px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.1)); }
+        .terminal-text { margin-top: 15px; font-weight: bold; font-size: 1.2em; letter-spacing: 6px; color: #444; text-transform: uppercase; }
+
+        .outer-box { background-color: #c0c0c0; border: 1px solid #777; padding: 4px; box-shadow: 4px 4px 10px rgba(0,0,0,0.2); }
+        .inner-box { border: 2px solid #999; background-color: #e8e8e8; padding: 30px 40px; display: flex; align-items: center; }
+        .icon-area { border: 2px inset #fff; background: #fdfdfd; padding: 15px; margin-right: 35px; }
+        .icon-area img { width: 75px; filter: grayscale(1) contrast(1.5) opacity(0.8); }
+        
+        .login-fields { display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; align-items: center; justify-content: flex-end; }
+        .input-group label { font-size: 13px; font-weight: bold; margin-right: 15px; text-transform: uppercase; white-space: nowrap; }
+        .login-input { width: 180px; border: 2px inset #eee; background-color: #fff; padding: 6px; font-family: inherit; font-size: 14px; outline: none; }
+        .btn-auth { background: #dcdcdc; border: 2px outset #fff; padding: 6px 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 15px; float: right; font-family: inherit; }
+        .btn-auth:active { border-style: inset; }
+
+        .footer-banner {
+            position: absolute; bottom: 0; width: 100%; border-top: 2px solid #444;
+            background: #222; padding: 15px 0; text-align: center; font-size: 11px; color: #c00; font-weight: bold;
+        }
+
+        /* --- BUREAU & FENETRES --- */
+        .lockdown-active::after {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; animation: red-alert 2s infinite; z-index: 100000;
+        }
+        @keyframes red-alert {
+            0% { box-shadow: inset 0 0 100px rgba(255, 0, 0, 0); }
+            50% { box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.6); }
+            100% { box-shadow: inset 0 0 100px rgba(255, 0, 0, 0); }
+        }
+        .shake { animation: shake-anim 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-anim {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        #desktop { height: calc(100vh - 48px); padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, 90px); grid-template-rows: repeat(auto-fill, 100px); grid-auto-flow: column; gap: 15px; }
+
+        .shortcut {
+            width: 90px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; font-size: 11px; text-align: center; text-shadow: 0px 2px 4px rgba(0,0,0,0.8); cursor: pointer; border-radius: 4px; transition: all 0.2s; border: 1px solid transparent; position: relative;
+        }
+        .shortcut:hover { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(4px); border: 1px solid var(--scp-border); }
+        .shortcut img { width: 40px; height: 40px; margin-bottom: 8px; filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.5)); }
+
+        .win-app {
+            position: absolute; background: var(--win-bg); border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.3); z-index: 10; backdrop-filter: blur(10px); animation: winOpen 0.2s ease-out;
+        }
+        @keyframes winOpen { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .win-header {
+            height: 38px; background: #ffffff; display: flex; justify-content: space-between; align-items: center;
+            padding-left: 15px; font-size: 11px; font-weight: 600; color: #333; user-select: none; cursor: move; border-bottom: 1px solid #ddd;
+        }
+        .win-controls { display: flex; height: 100%; }
+        .win-btn { width: 45px; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer; }
+        .win-btn:hover { background: rgba(0,0,0,0.05); }
+        .win-btn.close:hover { background: #e81123; color: white; }
+
+        .win-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            height: 48px; background: var(--taskbar-bg); backdrop-filter: blur(15px); position: fixed;
+            bottom: 0; left: 0; width: 100%; display: flex; align-items: center; z-index: 1000000; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .start-icon { width: 55px; height: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .start-icon:hover { background: rgba(255,255,255,0.1); }
+        .start-icon img { height: 32px; border-radius: 4px; }
+        .task-apps { display: flex; align-items: center; height: 100%; padding: 0 5px; gap: 5px; }
+        .task-app-icon { width: 44px; height: 40px; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid transparent; cursor: pointer; position: relative; }
+        .task-app-icon.active { background: rgba(255,255,255,0.1); border-bottom: 2px solid var(--win-blue); }
+        .task-app-icon img { width: 22px; }
+        .system-tray { margin-left: auto; color: white; font-size: 12px; padding-right: 15px; text-align: right; }
+
+        /* BADGES NOTIFICATIONS */
+        .notif-badge {
+            position: absolute; top: 2px; right: 2px; background: var(--danger); color: white;
+            font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px;
+            min-width: 10px; text-align: center; border: 1px solid rgba(0,0,0,0.3);
+            display: none; pointer-events: none;
+        }
+
+        /* --- MENU DEMARRER --- */
+        #start-menu {
+            position: fixed; bottom: 48px; left: 5px; width: 320px; height: 450px;
+            background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px 8px 0 0;
+            z-index: 999999; display: none; flex-direction: column;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.5); animation: startUp 0.2s ease-out;
+            color: white; overflow: hidden;
+        }
+        @keyframes startUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .start-user-area { padding: 20px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); }
+        .user-avatar { width: 40px; height: 40px; background: var(--win-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.2); overflow: hidden; }
+        .start-search { padding: 10px 20px; }
+        .start-search input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; color: white; outline: none; font-size: 12px; }
+        .start-apps-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .start-item { display: flex; align-items: center; gap: 12px; padding: 8px 15px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .start-item:hover { background: rgba(255,255,255,0.1); }
+        .start-item img { width: 24px; height: 24px; }
+        .start-footer { padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+        .btn-logout { cursor: pointer; color: var(--danger); font-weight: bold; }
+
+        .terminal { background: #0a0a0a; color: var(--terminal-green); font-family: 'Consolas', monospace; padding: 20px; flex: 1; overflow-y: auto; font-size: 13px; }
+        .cctv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; background: #000; flex: 1; }
+        .cam { background: #111; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #444; border: 1px solid #222; }
+        .static-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://media.giphy.com/media/oEI9uWUicGLeE/giphy.gif'); opacity: 0.05; pointer-events: none; }
+
+        .map-container { flex: 1; position: relative; background: url('mapgta.jpg') no-repeat center center; background-size: cover; }
+        .map-grid { display: grid; grid-template-columns: repeat(10, 1fr); width: 100%; height: 100%; opacity: 0.15; position: absolute; top: 0; left: 0; }
+        .map-cell { border: 1px solid var(--terminal-green); }
+        .radar-sweep { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; background: conic-gradient(from 0deg, rgba(0, 255, 65, 0.2) 0deg, transparent 90deg); transform: translate(-50%, -50%); animation: radar-rotate 4s linear infinite; pointer-events: none; }
+        @keyframes radar-rotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        .doc-sidebar { width: 220px; background: #f0f0f0; border-right: 1px solid #ddd; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
+        .doc-category { font-weight: bold; font-size: 10px; color: #333; margin: 15px 0 5px 5px; text-transform: uppercase; background: #ddd; padding: 5px; border-radius: 3px; display: flex; justify-content: space-between; align-items: center; }
+        .doc-item { padding: 8px 10px; font-size: 11px; cursor: pointer; border-radius: 4px; margin-bottom: 2px; transition: 0.2s; border-left: 3px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .doc-item:hover { background: #e0e0e0; }
+        .doc-item.active { background: #fff; border-left: 3px solid var(--win-blue); font-weight: bold; }
+        
+        .admin-tab { padding: 12px 25px; cursor: pointer; font-size: 11px; font-weight: bold; letter-spacing: 1px; color: #888; border-bottom: 2px solid transparent; }
+        .admin-tab.active { color: white; border-bottom: 2px solid var(--win-blue); background: rgba(255,255,255,0.05); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+
+        .lvl-badge { padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; color: white; }
+        .lvl-1 { background: #27ae60; }
+        .lvl-2 { background: #2980b9; }
+        .lvl-3 { background: #f39c12; }
+        .lvl-4 { background: #d35400; }
+        .lvl-5 { background: #c0392b; border: 1px solid yellow; }
+
+        /* MAIL SYSTEM SPECIFIC */
+        .mail-sidebar { width: 200px; background: #f3f3f3; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+        .mail-nav-item { padding: 12px 15px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; color: #555; }
+        .mail-nav-item:hover { background: #e8e8e8; }
+        .mail-nav-item.active { background: #fff; color: var(--win-blue); font-weight: bold; border-left: 3px solid var(--win-blue); }
+        .mail-list { width: 300px; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; }
+        .mail-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; position: relative; transition: 0.2s; }
+        .mail-item:hover { background: #f9f9f9; }
+        .mail-item.unread { background: #f0f7ff; }
+        .mail-item.unread::before { content: ""; position: absolute; left: 5px; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; background: var(--win-blue); border-radius: 50%; }
+        .mail-content { flex: 1; padding: 30px; background: #fff; overflow-y: auto; display: flex; flex-direction: column; }
+        .mail-header-info { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .mail-compose { display: none; padding: 25px; flex-direction: column; gap: 10px; flex: 1; }
+        .mail-input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; }
+        .btn-new-mail { margin: 10px; padding: 10px; background: var(--win-blue); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* NEWS SYSTEM MODS */
+        .news-item { padding: 15px; border-bottom: 1px solid #eee; margin-bottom: 10px; background: white; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; position: relative; transition: 0.2s; }
+        .news-item:hover { background: #fafafa; border-left: 3px solid var(--danger); }
+        .news-item h4 { margin: 0 0 5px 0; color: var(--danger); }
+        .news-date { font-size: 10px; color: #888; }
+        .news-preview { font-size: 12px; color: #555; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .news-img-preview { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+        .btn-del-news { position: absolute; top: 10px; right: 10px; background: #ff3333; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 9px; }
+
+        .spy-terminal { background: #000; color: #ff3333; font-family: monospace; padding: 15px; flex: 1; overflow-y: auto; }
+        .dispatch-row { display: flex; padding: 10px; border-bottom: 1px solid #eee; align-items: center; gap: 10px; font-size: 12px; }
+
+        /* OVERLAY ACCES REFUSE */
+        .access-denied-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); color: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100; text-align: center;
+        }
+
+        /* ARCHIVE EDITORS */
+        .archive-edit-controls { background: #e8e8e8; border-bottom: 1px solid #ccc; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        .archive-btn { padding: 5px 10px; font-size: 10px; font-weight: bold; cursor: pointer; border: 1px solid #999; background: #fff; }
+        .archive-btn.danger { color: red; }
+
+        /* IMAGE SUPP */
+        .mail-body-display img, .doc-content img, .news-viewer-img { max-width: 100%; margin-top: 15px; border: 1px solid #ddd; }
+    </style>
 </head>
 <body>
 
+<div class="scanline"></div>
+
 <div id="login-overlay">
-    <div style="border: 1px solid #333; padding: 40px; width: 450px; background: #0a0a0a; text-align: center;">
-        <img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png" style="width:100px; filter:invert(1); margin-bottom:20px;">
-        <h2 style="letter-spacing: 5px;">SCP FOUNDATION</h2>
-        <input type="text" id="user-id" class="input-scp" style="text-align:center" placeholder="ID PERSONNEL">
-        <input type="password" id="user-pass" class="input-scp" style="text-align:center" placeholder="CLÉ DE SÉCURITÉ">
-        <button class="sidebar-btn" style="width:100%;" onclick="checkLogin()">AUTHENTIFICATION</button>
-        <div id="login-msg" style="color:#f44; margin-top:10px;"></div>
+    <div class="top-header">
+        <img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png">
+        <div class="terminal-text">Secure Protocol Interface Network</div>
     </div>
-</div>
-
-<div id="topbar">
-    <span class="header-restricted">[RESTRICTED]</span>
-    <span class="header-site">SITE-██</span>
-    <div id="sync-led"></div>
-    <div class="header-user-info">AGENT: <span id="display-id">_</span> | LVL: <span id="display-lvl">_</span></div>
-</div>
-
-<div id="sidebar">
-    <div class="sidebar-btn" data-open="profile">Dossier Personnel</div>
-    <div class="sidebar-btn" data-open="documents">Archives SCP</div>
-    <div class="sidebar-btn" data-open="creator" onclick="prepareCreate()" style="color:#0f0;">Créer Rapport</div>
-    <div class="sidebar-btn" data-open="comms">Communications</div>
-    <div class="sidebar-btn" data-open="terminal">SC-OS Terminal</div>
-    <div class="sidebar-btn admin-only" data-open="admin-agents">O5 - Gestion Personnel</div>
-    <div class="sidebar-btn admin-only" data-open="spy" style="color:#f44;">O5 - Surveillance</div>
-    <div class="sidebar-btn" onclick="syncCloud(false)" style="margin-top:auto; color:cyan;">Sync Cloud</div>
-    <div class="sidebar-btn" onclick="location.reload()" style="color:#f44;">Déconnexion</div>
-</div>
-
-<div id="win-profile" class="window"><div class="titlebar"><span>DOSSIER PERSONNEL</span><button data-close="win-profile">X</button></div><div class="content" id="prof-data"></div></div>
-<div id="win-documents" class="window" style="width:900px;"><div class="titlebar"><span>ARCHIVES SÉCURISÉES</span><button data-close="win-documents">X</button></div><div class="content" id="archive-list"></div></div>
-
-<div id="win-view-report" class="window" style="width:950px; height:90vh;">
-    <div class="titlebar"><span>LECTURE ARCHIVE</span><button data-close="win-view-report">X</button></div>
-    <div class="content" id="report-viewer" style="background:#333; padding:0;"></div>
-</div>
-
-<div id="win-creator" class="window">
-    <div class="titlebar"><span id="creator-title">ÉDITEUR</span><button data-close="win-creator">X</button></div>
-    <div class="content">
-        <input id="c-item" class="input-scp" placeholder="ID (ex: SCP-001)">
-        <input id="c-class" class="input-scp" placeholder="CLASSE D'OBJET">
-        <input id="c-lvl" type="number" class="input-scp" placeholder="NIVEAU REQUIS">
-        <input id="c-img" class="input-scp" placeholder="URL IMAGE">
-        <textarea id="c-proc" class="input-scp" style="height:100px;" placeholder="PROCÉDURES DE CONFINEMENT"></textarea>
-        <textarea id="c-desc" class="input-scp" style="height:150px;" placeholder="DESCRIPTION"></textarea>
-        <button class="sidebar-btn" style="width:100%; border-color:#0f0;" onclick="saveReport()">VALIDER ET PUBLIER</button>
-    </div>
-</div>
-
-<div id="win-admin-agents" class="window" style="width:900px;">
-    <div class="titlebar"><span>O5 - ADMINISTRATION DU PERSONNEL</span><button data-close="win-admin-agents">X</button></div>
-    <div class="content">
-        <div style="background:#1a1a1a; padding:15px; border:1px solid #333; margin-bottom:20px;">
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <input id="adm-id" class="input-scp" placeholder="ID AGENT">
-                <input id="adm-pass" class="input-scp" placeholder="CLÉ SÉCURITÉ">
-                <input id="adm-name" class="input-scp" placeholder="NOM COMPLET">
-                <select id="adm-lvl" class="input-scp" style="width:120px;"><option value="1">LVL 1</option><option value="2">LVL 2</option><option value="3">LVL 3</option><option value="4">LVL 4</option><option value="5">LVL 5</option></select>
+    <div class="outer-box">
+        <div class="inner-box">
+            <div class="icon-area"><img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png"></div>
+            <div class="login-fields">
+                <div class="input-group">
+                    <label>Operator Name</label>
+                    <input type="text" id="login-user" class="login-input" placeholder="NOM DE L'AGENT">
+                </div>
+                <div class="input-group">
+                    <label>Clearance ID</label>
+                    <input type="password" id="login-pass" class="login-input" placeholder="ID BADGE">
+                </div>
+                <div>
+                    <button class="btn-auth" onclick="handleLogin()">Authorize Access</button>
+                </div>
+                <div id="login-msg" style="color:red; font-size:10px; text-align:right; font-weight:bold; height: 12px; margin-top: 5px;"></div>
             </div>
-            <button onclick="adminSave()" class="sidebar-btn" style="width:100%; border-color:cyan;">SAUVEGARDER / MODIFIER AGENT</button>
         </div>
-        <table id="agent-table"></table>
+    </div>
+    <div class="footer-banner">
+        WARNING: CLASSIFIED DATA BEYOND THIS POINT.<br>
+        COGNITOHAZARD FILTERS ACTIVE. CONTINUING WITHOUT AUTHORIZATION IS A TERMINABLE OFFENSE.
     </div>
 </div>
 
-<div id="win-comms" class="window"><div class="titlebar"><span>MESSAGERIE</span><button data-close="win-comms">X</button></div><div class="content chat-container"><div id="chan-list"></div><div id="chat-main"><div id="chat-title" style="color:#f44; font-weight:bold;">CANAL: GÉNÉRAL</div><div id="chat-log" class="chat-log"></div><div style="display:flex; gap:10px;"><input id="chat-in" class="input-scp" placeholder="Message..."><button class="sidebar-btn" onclick="sendMsg()">ENVOYER</button></div></div></div></div>
-<div id="win-terminal" class="window"><div class="titlebar"><span>SC-OS TERMINAL</span><button data-close="win-terminal">X</button></div><div class="content" style="background:#000; padding:0; display:flex; flex-direction:column;"><div id="term-log"></div><div class="term-input-line"><span style="color:#0f0">root@foundation:~#&nbsp;</span><input id="term-in" autocomplete="off"></div></div></div>
-<div id="win-spy" class="window"><div class="titlebar"><span>O5 - SURVEILLANCE</span><button data-close="win-spy">X</button></div><div class="content" id="spy-log" style="background:#000; color:#f44; font-size:12px;"></div></div>
+<div id="desktop">
+    <div class="shortcut" onclick="toggleApp('admin-window', 'task-admin')">
+        <img src="https://cdn-icons-png.flaticon.com/512/906/906343.png">
+        <span>Administration</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('dispatch-window', 'task-dispatch')">
+        <img src="https://cdn-icons-png.flaticon.com/512/3502/3502688.png">
+        <span>Dispatch Central</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('docs-window', 'task-docs')">
+        <img src="https://cdn-icons-png.flaticon.com/512/2991/2991106.png">
+        <span>Archives S.C.P.</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('mail-window', 'task-mail')">
+        <div id="notif-mail-desktop" class="notif-badge">0</div>
+        <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png">
+        <span>S.C.I.N. Mail</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('news-window', 'task-news')">
+        <div id="notif-news-desktop" class="notif-badge">0</div>
+        <img src="https://cdn-icons-png.flaticon.com/512/2540/2540832.png">
+        <span>S.I.N. News</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('spy-window', 'task-spy')">
+        <img src="https://cdn-icons-png.flaticon.com/512/2562/2562621.png">
+        <span>Espionnage Elec.</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('map-window', 'task-map')">
+        <img src="https://cdn-icons-png.flaticon.com/512/854/854878.png">
+        <span>S.I.T.E. Locator</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('monitor-window', 'task-monitor')">
+        <img src="https://cdn-icons-png.flaticon.com/512/2592/2592230.png">
+        <span>Site Monitor</span>
+    </div>
+    <div class="shortcut" onclick="toggleApp('cctv-window', 'task-cctv')">
+        <img src="https://cdn-icons-png.flaticon.com/512/5602/5602056.png">
+        <span>CCTV Feed</span>
+    </div>
+</div>
+
+<div id="start-menu">
+    <div class="start-user-area">
+        <div class="user-avatar" id="start-avatar" onclick="changeUserAvatar()">?</div>
+        <div>
+            <div id="start-user-name" style="font-weight: bold;">Session Inconnue</div>
+            <div id="start-user-lvl" style="font-size: 10px; opacity: 0.7;">Chargement...</div>
+        </div>
+    </div>
+    <div class="start-search">
+        <input type="text" placeholder="Rechercher un protocole ou fichier...">
+    </div>
+    <div class="start-apps-list">
+        <div class="start-item" onclick="toggleApp('admin-window', 'task-admin'); toggleStartMenu()">
+            <img src="https://cdn-icons-png.flaticon.com/512/906/906343.png"> <span>Console d'Administration</span>
+        </div>
+        <div class="start-item" onclick="toggleApp('mail-window', 'task-mail'); toggleStartMenu()">
+            <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png"> <span>Messagerie Sécurisée</span>
+        </div>
+        <div class="start-item" onclick="toggleApp('news-window', 'task-news'); toggleStartMenu()">
+            <img src="https://cdn-icons-png.flaticon.com/512/2540/2540832.png"> <span>Actualités du Site</span>
+        </div>
+        <div class="start-item" onclick="toggleApp('docs-window', 'task-docs'); toggleStartMenu()">
+            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991106.png"> <span>Archives Classifiées</span>
+        </div>
+        <div class="start-item" onclick="toggleApp('monitor-window', 'task-monitor'); toggleStartMenu()">
+            <img src="https://cdn-icons-png.flaticon.com/512/2592/2592230.png"> <span>Statut du Site</span>
+        </div>
+        <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+        <div class="start-item" onclick="location.reload()">
+            <img src="https://cdn-icons-png.flaticon.com/512/3524/3524659.png"> <span>Redémarrer S.P.I.N.</span>
+        </div>
+    </div>
+    <div class="start-footer">
+        <div>Site-19 Network</div>
+        <div class="btn-logout" onclick="location.reload()">DÉCONNEXION</div>
+    </div>
+</div>
+
+<div id="news-window" class="win-app" style="width: 700px; height: 550px; top: 15%; left: 30%;">
+    <div class="win-header"><span>📰 S.I.N. NEWS - ANNONCES OFFICIELLES</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('news-window', 'task-news')">✕</div></div></div>
+    <div class="win-body" style="background: #f0f0f0; display: flex; flex-direction: row;">
+        <div style="width: 300px; border-right: 1px solid #ddd; display: flex; flex-direction: column; background: #fff;">
+            <div id="news-admin-bar" style="display:none; padding: 10px; border-bottom: 1px solid #eee;">
+                <button onclick="showNewsCreate()" style="width: 100%; padding: 8px; cursor: pointer; background: var(--danger); color: white; border: none; font-weight: bold;">+ PUBLIER ANNONCE</button>
+            </div>
+            <div id="news-list" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
+        </div>
+
+        <div id="news-reader" style="flex: 1; padding: 25px; background: white; overflow-y: auto; position: relative;">
+            <div id="news-empty-view" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aaa;">
+                <img src="https://cdn-icons-png.flaticon.com/512/2540/2540832.png" style="width: 80px; opacity: 0.1; margin-bottom: 20px;">
+                <p>Sélectionnez une annonce</p>
+            </div>
+            <div id="news-full-view" style="display: none;">
+                <h2 id="news-v-title" style="color: var(--danger); margin-top: 0;"></h2>
+                <div id="news-v-meta" style="font-size: 11px; color: #888; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;"></div>
+                <div id="news-v-body" style="line-height: 1.6; font-size: 14px; white-space: pre-wrap;"></div>
+            </div>
+            
+            <div id="news-create-area" style="display:none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; padding: 20px; z-index: 5;">
+                <h3 style="margin-top: 0;">Rédiger une annonce</h3>
+                <input type="text" id="news-title-in" placeholder="Titre de l'annonce" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                <input type="text" id="news-img-in" placeholder="URL Image Illustration (Optionnel)" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                <textarea id="news-body-in" placeholder="Contenu de l'annonce..." style="width: 100%; height: 200px; padding: 8px; margin-bottom: 15px; resize: none;"></textarea>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button onclick="hideNewsCreate()" style="padding: 10px 20px; cursor: pointer;">ANNULER</button>
+                    <button onclick="postNews()" style="padding: 10px 25px; background: var(--win-blue); color: white; border: none; font-weight: bold; cursor: pointer;">PUBLIER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="docs-window" class="win-app" style="width: 1000px; height: 650px; top: 10%; left: 10%;">
+    <div class="win-header"><span>📁 ARCHIVES CENTRALES S.P.I.N.</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('docs-window', 'task-docs')">✕</div></div></div>
+    <div id="archive-admin-bar" class="archive-edit-controls" style="display:none;">
+        <button class="archive-btn" onclick="createNewCategory()">+ NOUVELLE CATÉRICORIE</button>
+        <button class="archive-btn" onclick="showDocEditor()">+ NOUVEAU RAPPORT</button>
+        <div style="flex:1"></div>
+        <small style="color:#666; font-weight:bold;">MODIFICATEUR D'ARCHIVES LVL 5 ACTIVÉ</small>
+    </div>
+    <div class="win-body">
+        <div class="doc-sidebar" id="archive-sidebar">
+            </div>
+        <div id="doc-viewer" style="flex: 1; background: white; padding: 30px; overflow-y: auto; font-family: 'Courier New'; position: relative;">
+            <div id="doc-display-area">
+                <h2 id="doc-title">Sélectionnez un document</h2>
+                <div id="doc-content"><p>En attente d'autorisation...</p></div>
+            </div>
+            
+            <div id="doc-editor-area" style="display:none; height:100%; flex-direction:column; gap:10px;">
+                <h3>Éditeur de Rapport</h3>
+                <input type="text" id="edit-doc-title" placeholder="Titre du rapport (ex: SCP-XXX)" style="padding:10px; width:100%;">
+                <input type="text" id="edit-doc-img" placeholder="URL Image Illustration (Optionnel)" style="padding:10px; width:100%;">
+                <select id="edit-doc-cat" style="padding:10px; width:100%;"></select>
+                <select id="edit-doc-lvl" style="padding:10px; width:100%;">
+                    <option value="1">Accréditation Niveau 1</option>
+                    <option value="2">Accréditation Niveau 2</option>
+                    <option value="3">Accréditation Niveau 3</option>
+                    <option value="4">Accréditation Niveau 4</option>
+                    <option value="5">Accréditation Niveau 5 (O5 Only)</option>
+                </select>
+                <textarea id="edit-doc-body" style="flex:1; padding:15px; font-family:monospace;" placeholder="Contenu du document (HTML autorisé)..."></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="saveDocument()" style="padding:10px 20px; background:var(--win-blue); color:white; border:none; cursor:pointer;">ENREGISTRER</button>
+                    <button onclick="cancelDocEdit()" style="padding:10px 20px;">ANNULER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="admin-window" style="top: 5%; left: 10%; width: 900px; height: 650px;">
+    <div class="win-header">
+        <div>⚙️ ADMINISTRATION SYSTÈME - SITE-19</div>
+        <div class="win-controls"><div class="win-btn close" onclick="toggleApp('admin-window', 'task-admin')">✕</div></div>
+    </div>
+    <div style="display: flex; background: #1a1a1a; color: white; border-bottom: 1px solid #333;">
+        <div class="admin-tab active" id="tab-overview" onclick="switchAdminTab('overview')">TABLEAU DE BORD</div>
+        <div class="admin-tab" id="tab-personnel" onclick="switchAdminTab('personnel')">PERSONNEL DB</div>
+        <div class="admin-tab" id="tab-logs" onclick="switchAdminTab('logs')">LOGS SÉCURISÉS</div>
+    </div>
+    <div class="win-body" style="background: #fdfdfd; flex-direction: column; overflow-y: auto;">
+        <div id="admin-section-overview" style="padding: 25px; display: block;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 5px solid var(--win-blue); box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <small style="color: #888; font-weight: bold; text-transform: uppercase;">Effectifs Actifs</small>
+                    <h2 id="stat-active" style="margin: 10px 0; font-size: 32px;">0</h2>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 5px solid var(--danger); box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <small style="color: #888; font-weight: bold; text-transform: uppercase;">Révocations</small>
+                    <h2 id="stat-terminated" style="margin: 10px 0; font-size: 32px;">0</h2>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; border-left: 5px solid #f39c12; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <small style="color: #888; font-weight: bold; text-transform: uppercase;">Niveau Sécurité</small>
+                    <h2 id="stat-level" style="margin: 10px 0; font-size: 32px; color: #27ae60;">CHARGE...</h2>
+                </div>
+            </div>
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
+                <h3>Configuration du Niveau de Confinement</h3>
+                <select id="security-level" style="width: 100%; padding: 15px;" onchange="updateSecurityLevel()">
+                    <option value="safe">NIVEAU 1 : SAFE</option>
+                    <option value="euclid">NIVEAU 2 : EUCLID</option>
+                    <option value="keter">NIVEAU 3 : KETER</option>
+                    <option value="thaumiel">NIVEAU 4 : THAUMIEL</option>
+                    <option value="apollyon">NIVEAU 5 : APOLLYON</option>
+                </select>
+            </div>
+        </div>
+        <div id="admin-section-personnel" style="padding: 20px; display: none; flex: 1;">
+            <div style="display: flex; gap: 20px; height: 100%;">
+                <div style="width: 300px; background: #f0f0f0; padding: 15px; border-radius: 5px;">
+                    <h4 id="form-title">Enregistrer Personnel</h4>
+                    <input type="hidden" id="edit-index" value="-1">
+                    <input type="text" id="emp-name" placeholder="Nom" style="width: 90%; margin-bottom: 10px; padding: 5px;">
+                    <input type="text" id="emp-id" placeholder="ID/Badge" style="width: 90%; margin-bottom: 10px; padding: 5px;">
+                    <label style="font-size: 11px; font-weight: bold;">NIVEAU D'ACCRÉDITATION</label>
+                    <select id="emp-level" style="width: 100%; margin-bottom: 10px; padding: 5px;">
+                        <option value="1">Level 1 (Interne)</option>
+                        <option value="2">Level 2 (Restreint)</option>
+                        <option value="3">Level 3 (Confidentiel)</option>
+                        <option value="4">Level 4 (Secret)</option>
+                        <option value="5">Level 5 (Thaumiel/O5)</option>
+                    </select>
+                    <label style="font-size: 11px; font-weight: bold;">STATUT</label>
+                    <select id="emp-status" style="width: 100%; margin-bottom: 15px; padding: 5px;">
+                        <option value="ACTIF">ACTIF</option>
+                        <option value="TERMINÉ">TERMINÉ</option>
+                    </select>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="btn-save" onclick="saveEmployee()" style="flex: 1; padding: 8px; background: var(--win-blue); color: white; border: none; cursor: pointer;">ENREGISTRER</button>
+                        <button id="btn-cancel" onclick="resetForm()" style="display: none; padding: 8px; background: #999; color: white; border: none;">ANNULER</button>
+                    </div>
+                </div>
+                <div style="flex: 1; background: white; border: 1px solid #ddd; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead style="background: #333; color: white;">
+                            <tr><th style="padding:10px;">ID</th><th>NOM</th><th>LVL</th><th>STATUT</th><th>ACTIONS</th></tr>
+                        </thead>
+                        <tbody id="employee-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="admin-section-logs" style="padding: 0; display: none; flex: 1; background: #000;">
+            <div id="admin-logs" class="terminal" style="height: 100%; border: none;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="dispatch-window" style="top: 10%; left: 15%; width: 750px; height: 500px;">
+    <div class="win-header"><span>🚓 DISPATCH & PRISE DE SERVICE</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('dispatch-window', 'task-dispatch')">✕</div></div></div>
+    <div class="win-body" style="background: #f4f4f4; flex-direction: column;">
+        <div style="padding: 15px; background: #fff; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="toggleDuty()" id="duty-btn" style="padding: 8px 15px; background: #27ae60; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">PRENDRE SON SERVICE</button>
+            <div id="duty-status" style="font-size: 11px; color: #666; font-weight: bold;">STATUT : HORS SERVICE</div>
+        </div>
+        <div style="flex: 1; overflow-y: auto; padding: 10px;" id="dispatch-feed">
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="mail-window" style="top: 15%; left: 20%; width: 900px; height: 550px;">
+    <div class="win-header"><span>📧 S.C.I.N. MAIL - SYSTÈME DE MESSAGERIE</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('mail-window', 'task-mail')">✕</div></div></div>
+    <div class="win-body">
+        <div class="mail-sidebar">
+            <button class="btn-new-mail" onclick="showCompose()">+ NOUVEAU MESSAGE</button>
+            <div id="nav-inbox" class="mail-nav-item active" onclick="switchMailBox('inbox')">Boîte de réception</div>
+            <div id="nav-sent" class="mail-nav-item" onclick="switchMailBox('sent')">Messages envoyés</div>
+        </div>
+        <div class="mail-list" id="mail-list-area"></div>
+        <div class="mail-content" id="mail-reader-area">
+            <div id="mail-view-empty" style="flex: 1; display: flex; align-items: center; justify-content: center; color: #aaa; flex-direction: column;">
+                <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" style="width: 60px; opacity: 0.1; margin-bottom: 15px;">
+                Sélectionnez un message pour le lire
+            </div>
+            <div id="mail-view-content" style="display: none;">
+                <div class="mail-header-info">
+                    <h2 id="mail-subject-display"></h2>
+                    <div style="font-size: 12px; color: #666;">
+                        <span id="mail-direction-label">De :</span> <span id="mail-from-display" style="font-weight: bold; color: #333;"></span><br>
+                        Le : <span id="mail-date-display"></span>
+                    </div>
+                </div>
+                <div id="mail-body-display" style="line-height: 1.6; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+        <div class="mail-compose" id="mail-composer">
+            <h3 style="margin-top: 0;">Nouveau Message Sécurisé</h3>
+            <input type="text" id="mail-to" class="mail-input" placeholder="Destinataire (Nom de l'agent)">
+            <input type="text" id="mail-subject" class="mail-input" placeholder="Objet du message">
+            <input type="text" id="mail-img" class="mail-input" placeholder="URL Image jointe (Optionnel)">
+            <textarea id="mail-body" class="mail-input" style="flex: 1; resize: none;" placeholder="Contenu du message..."></textarea>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="hideCompose()" style="padding: 8px 20px; cursor: pointer;">ANNULER</button>
+                <button onclick="sendMail()" style="padding: 8px 25px; background: var(--win-blue); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">ENVOYER</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="spy-window" style="top: 15%; left: 15%; width: 700px; height: 450px;">
+    <div class="win-header"><span>🕵️ INTERCEPTION ÉLECTRONIQUE</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('spy-window', 'task-spy')">✕</div></div></div>
+    <div class="win-body">
+        <div class="spy-terminal" id="spy-log">
+            [SYSTEM] Initialisation de l'écoute réseau...<br>
+            [DANGER] Cryptage RSA-4096 détecté sur les serveurs distants.<br>
+            [STATUS] En attente de paquets...<br>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="map-window" style="top: 10%; left: 10%; width: 800px; height: 500px;">
+    <div class="win-header"><span>📍 S.I.T.E. LOCATOR - GLOBAL TRACKING</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('map-window', 'task-map')">✕</div></div></div>
+    <div class="win-body">
+        <div class="map-container">
+            <div class="map-grid" id="map-grid"></div>
+            <div class="radar-sweep"></div>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="monitor-window" style="top: 20%; left: 20%; width: 400px; height: 500px;">
+    <div class="win-header"><span>🖥️ MONITORING SYSTÈME SITE-19</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('monitor-window', 'task-monitor')">✕</div></div></div>
+    <div class="win-body" style="background: #000; color: var(--terminal-green); padding: 15px; font-family: monospace; font-size: 11px;">
+        <div>> SITE_STATUS: <span style="color:white; background: #27ae60; padding: 2px 5px;">NOMINAL</span></div>
+        <div style="margin-top: 15px;">> CORE_TEMPERATURE: 34.2°C</div>
+        <div>> POWER_SUPPLY: STABLE (98.4%)</div>
+        <div>> CONTAINMENT_FIELDS: ACTIVE</div>
+        <div style="margin-top: 15px;">> ACTIVE_THREATS: 0</div>
+        <div>> LOGGED_USERS: <span id="monitor-count">0</span></div>
+        <div style="margin-top: 20px; border: 1px solid var(--terminal-green); padding: 10px;">
+            <div style="text-align:center;">CPU LOAD</div>
+            <div style="width: 100%; height: 10px; background: #222; margin-top: 5px;">
+                <div style="width: 15%; height: 100%; background: var(--terminal-green);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="win-app" id="cctv-window" style="top: 5%; left: 5%; width: 800px; height: 500px;">
+    <div class="win-header"><span>📹 FLUX VIDÉO DE SURVEILLANCE DIRECT</span><div class="win-controls"><div class="win-btn close" onclick="toggleApp('cctv-window', 'task-cctv')">✕</div></div></div>
+    <div class="win-body">
+        <div class="cctv-grid">
+            <div class="cam"><div class="static-overlay"></div>CAM_01 - ENTREE PRINCIPALE</div>
+            <div class="cam"><div class="static-overlay"></div>CAM_02 - AILE DE CONFINEMENT</div>
+            <div class="cam"><div class="static-overlay"></div>CAM_03 - LABORATOIRES</div>
+            <div class="cam"><div class="static-overlay"></div>CAM_04 - CELLULE SCP-173</div>
+        </div>
+    </div>
+</div>
+
+<div id="taskbar">
+    <div class="start-icon" onclick="toggleStartMenu()">
+        <img src="https://scp-wiki.wdfiles.com/local--files/component%3Atheme/logo.png">
+    </div>
+    <div class="task-apps" id="task-apps">
+        <div class="task-app-icon" id="task-admin" style="display:none;" onclick="toggleApp('admin-window', 'task-admin')"><img src="https://cdn-icons-png.flaticon.com/512/906/906343.png"></div>
+        <div class="task-app-icon" id="task-dispatch" style="display:none;" onclick="toggleApp('dispatch-window', 'task-dispatch')"><img src="https://cdn-icons-png.flaticon.com/512/3502/3502688.png"></div>
+        <div class="task-app-icon" id="task-docs" style="display:none;" onclick="toggleApp('docs-window', 'task-docs')"><img src="https://cdn-icons-png.flaticon.com/512/2991/2991106.png"></div>
+        <div class="task-app-icon" id="task-mail" style="display:none;" onclick="toggleApp('mail-window', 'task-mail')">
+            <div id="notif-mail-task" class="notif-badge">0</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png">
+        </div>
+        <div class="task-app-icon" id="task-news" style="display:none;" onclick="toggleApp('news-window', 'task-news')">
+            <div id="notif-news-task" class="notif-badge">0</div>
+            <img src="https://cdn-icons-png.flaticon.com/512/2540/2540832.png">
+        </div>
+        <div class="task-app-icon" id="task-spy" style="display:none;" onclick="toggleApp('spy-window', 'task-spy')"><img src="https://cdn-icons-png.flaticon.com/512/2562/2562621.png"></div>
+        <div class="task-app-icon" id="task-map" style="display:none;" onclick="toggleApp('map-window', 'task-map')"><img src="https://cdn-icons-png.flaticon.com/512/854/854878.png"></div>
+        <div class="task-app-icon" id="task-monitor" style="display:none;" onclick="toggleApp('monitor-window', 'task-monitor')"><img src="https://cdn-icons-png.flaticon.com/512/2592/2592230.png"></div>
+        <div class="task-app-icon" id="task-cctv" style="display:none;" onclick="toggleApp('cctv-window', 'task-cctv')"><img src="https://cdn-icons-png.flaticon.com/512/5602/5602056.png"></div>
+    </div>
+    <div class="system-tray">
+        <div id="clock" style="font-weight: bold;">00:00</div>
+        <div id="date" style="font-size: 10px; opacity: 0.8;">01/01/2024</div>
+    </div>
+</div>
 
 <script>
-const BIN_ID = "695497c343b1c97be90f96ce";
-const MASTER_KEY = "$2a$10$eHN8MXmITN.koPG.UViRYutQVeTRQWfLWZuBlTPvHPuhXXiG1snfq";
+    // --- CONFIGURATION ---
+    const BIN_ID = '695497c343b1c97be90f96ce';
+    const API_KEY = '$2a$10$eHN8MXmITN.koPG.UViRYutQVeTRQWfLWZuBlTPvHPuhXXiG1snfq'; 
 
-let agents = {}, reports = [], messages = [], currentUser = null, activeChan = "SITE-GÉNÉRAL";
-let editReportIndex = null;
-let editAgentId = null;
-
-// --- SYNC ---
-async function syncCloud(isSaving = false) {
-    const led = document.getElementById('sync-led');
-    led.style.opacity = "1"; led.style.background = isSaving ? "cyan" : "#0f0";
-    const headers = { "X-Master-Key": MASTER_KEY, "Content-Type": "application/json", "X-Bin-Versioning": "false" };
-    try {
-        if (isSaving) {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers, body: JSON.stringify({ agents, reports, messages }) });
-        } else {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
-            const data = await res.json();
-            if(data.record) {
-                agents = data.record.agents || {};
-                reports = data.record.reports || [];
-                messages = data.record.messages || [];
-                updateUI();
-            }
-        }
-    } catch (e) { console.error("Sync Error"); }
-    setTimeout(() => led.style.opacity = "0.3", 500);
-}
-
-// --- AUTH ---
-async function checkLogin() {
-    const id = document.getElementById('user-id').value.toUpperCase();
-    const ps = document.getElementById('user-pass').value;
-    await syncCloud(false);
-    if(agents[id] && agents[id].pass === ps) {
-        currentUser = { ...agents[id], id: id };
-        document.getElementById('login-overlay').style.display = 'none';
-        initSession();
-    } else { document.getElementById('login-msg').textContent = "IDENTIFICATION ÉCHOUÉE"; }
-}
-
-function initSession() {
-    document.getElementById('display-id').textContent = currentUser.id;
-    document.getElementById('display-lvl').textContent = currentUser.level;
-    document.getElementById('prof-data').innerHTML = `<h3>DOSSIER ACCRÉDITÉ : ${currentUser.id}</h3><hr><p>NOM : ${currentUser.name}</p><p>NIVEAU D'ACCRÉDITATION : ${currentUser.level}</p><p>STATUT : ACTIF</p>`;
-    if(currentUser.level >= 5) document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
-    updateUI();
-}
-
-function updateUI() {
-    renderArchives();
-    refreshAgents();
-    renderChans();
-    loadMsgs();
-    if(currentUser?.level >= 5) updateSpy();
-}
-
-// --- ARCHIVES SCP ---
-function renderArchives() {
-    const l = document.getElementById('archive-list'); if(!l) return;
-    l.innerHTML = reports.map((r, i) => `
-        <div style="border:1px solid #333; padding:12px; margin-bottom:8px; background:#111; display:flex; justify-content:space-between; align-items:center;">
-            <span><b style="color:white">[${r.item}]</b> - ${r.class} (Niv.${r.lvl})</span>
-            <div>
-                <button onclick="viewReport(${i})" class="action-btn">LIRE</button>
-                ${currentUser.level >= 5 ? `<button onclick="editReport(${i})" class="action-btn" style="color:cyan">✎</button><button onclick="deleteReport(${i})" class="action-btn" style="color:red">✖</button>` : ''}
-            </div>
-        </div>`).join('');
-}
-
-function viewReport(i) {
-    const r = reports[i];
-    if(currentUser.level < r.lvl) return alert("ACCRÉDITATION INSUFFISANTE");
-    document.getElementById('report-viewer').innerHTML = `
-        <div class="report-paper">
-            <h1 style="text-align:center; border-bottom:3px solid black; padding-bottom:10px;">RAPPORT DE CONFINEMENT SCP</h1>
-            <p><b>OBJET # :</b> ${r.item}</p>
-            <p><b>CLASSE :</b> ${r.class}</p>
-            <p><b>ACCRÉDITATION :</b> NIVEAU ${r.lvl}</p>
-            <hr>
-            ${r.img ? `<img src="${r.img}" class="report-img">` : ''}
-            <h3>PROCÉDURES DE CONFINEMENT :</h3>
-            <div class="pre-text">${r.proc}</div>
-            <br>
-            <h3>DESCRIPTION :</h3>
-            <div class="pre-text">${r.desc}</div>
-            <div style="margin-top:100px; text-align:center; opacity:0.3; font-size:10px;">PROPERTY OF SCP FOUNDATION - DO NOT DUPLICATE</div>
-        </div>`;
-    document.getElementById('win-view-report').style.display = 'flex';
-}
-
-function prepareCreate() {
-    editReportIndex = null;
-    document.getElementById('creator-title').textContent = "CRÉER NOUVEAU RAPPORT";
-    document.querySelectorAll('#win-creator .input-scp').forEach(i => i.value = "");
-}
-
-function editReport(i) {
-    const r = reports[i];
-    editReportIndex = i;
-    document.getElementById('c-item').value = r.item;
-    document.getElementById('c-class').value = r.class;
-    document.getElementById('c-lvl').value = r.lvl;
-    document.getElementById('c-img').value = r.img;
-    document.getElementById('c-proc').value = r.proc;
-    document.getElementById('c-desc').value = r.desc;
-    document.getElementById('creator-title').textContent = "MODIFICATION : " + r.item;
-    document.getElementById('win-creator').style.display = 'flex';
-}
-
-async function saveReport() {
-    const r = { item: document.getElementById('c-item').value, class: document.getElementById('c-class').value, lvl: parseInt(document.getElementById('c-lvl').value) || 1, img: document.getElementById('c-img').value, proc: document.getElementById('c-proc').value, desc: document.getElementById('c-desc').value };
-    if(editReportIndex !== null) reports[editReportIndex] = r; else reports.push(r);
-    renderArchives();
-    document.getElementById('win-creator').style.display = 'none';
-    await syncCloud(true);
-}
-
-async function deleteReport(i) {
-    if(confirm("Confirmer suppression archive ?")) { reports.splice(i, 1); renderArchives(); await syncCloud(true); }
-}
-
-// --- GESTION AGENTS (FIXED EDIT) ---
-async function adminSave() {
-    const id = document.getElementById('adm-id').value.toUpperCase();
-    const pass = document.getElementById('adm-pass').value;
-    const name = document.getElementById('adm-name').value;
-    const level = parseInt(document.getElementById('adm-lvl').value);
-
-    if(!id || !pass) return alert("ID et MOT DE PASSE requis");
-
-    // Si on modifiait un agent et que son ID a changé
-    if(editAgentId && editAgentId !== id) delete agents[editAgentId];
-
-    agents[id] = { pass, name, level };
-    
-    // Reset
-    editAgentId = null;
-    document.querySelectorAll('#win-admin-agents .input-scp').forEach(i => i.value = "");
-    refreshAgents();
-    await syncCloud(true);
-}
-
-function editAgent(id) {
-    const a = agents[id];
-    editAgentId = id;
-    document.getElementById('adm-id').value = id;
-    document.getElementById('adm-pass').value = a.pass;
-    document.getElementById('adm-name').value = a.name;
-    document.getElementById('adm-lvl').value = a.level;
-}
-
-async function deleteAgent(id) {
-    if(confirm("Supprimer l'agent " + id + " ?")) { delete agents[id]; refreshAgents(); await syncCloud(true); }
-}
-
-function refreshAgents() {
-    const t = document.getElementById('agent-table'); if(!t) return;
-    t.innerHTML = "<tr><th>ID</th><th>NOM</th><th>LVL</th><th>ACTIONS</th></tr>" + 
-        Object.keys(agents).map(id => `<tr><td>${id}</td><td>${agents[id].name}</td><td>L${agents[id].level}</td><td>
-            <button onclick="editAgent('${id}')" style="color:cyan; border:none; background:none; cursor:pointer;">✎</button>
-            <button onclick="deleteAgent('${id}')" style="color:red; border:none; background:none; cursor:pointer; margin-left:10px;">✖</button>
-        </td></tr>`).join('');
-}
-
-// --- MESSAGERIE & TERMINAL ---
-function renderChans() {
-    const l = document.getElementById('chan-list'); if(!l) return;
-    let html = "<b>CANAUX</b><hr>";
-    ["SITE-GÉNÉRAL", "SÉCURITÉ"].forEach(c => html += `<div class="sidebar-btn" onclick="setChan('${c}')">${c}</div>`);
-    html += "<br><b>PERSONNEL</b><hr>";
-    for(let id in agents) if(id !== currentUser.id) html += `<div class="sidebar-btn" onclick="setChan('${id}')">${id}</div>`;
-    l.innerHTML = html;
-}
-function setChan(c) { activeChan = c; document.getElementById('chat-title').textContent = "CANAL: " + c; loadMsgs(); }
-async function sendMsg() {
-    const i = document.getElementById('chat-in'); if(!i.value) return;
-    messages.push({ chan: activeChan, sender: currentUser.id, text: i.value });
-    loadMsgs(); i.value = ""; await syncCloud(true);
-}
-function loadMsgs() {
-    const log = document.getElementById('chat-log'); if(!log) return;
-    log.innerHTML = messages.filter(m => m.chan === activeChan || (m.chan === currentUser.id && m.sender === activeChan) || (m.chan === activeChan && m.sender === currentUser.id))
-        .map(m => `<div><b style="color:${m.sender===currentUser.id?'#0f0':'#f44'}">${m.sender}:</b> ${m.text}</div>`).join('');
-    log.scrollTop = log.scrollHeight;
-}
-function updateSpy() {
-    const s = document.getElementById('spy-log');
-    s.innerHTML = "<b>[TRAFFIC MONITOR]</b><br>" + messages.slice(-20).map(m => `[${m.chan}] ${m.sender}: ${m.text}`).join('<br>');
-}
-
-// TERMINAL
-const termIn = document.getElementById('term-in');
-const termLog = document.getElementById('term-log');
-termIn.onkeydown = (e) => {
-    if(e.key === 'Enter') {
-        const val = termIn.value.trim().toLowerCase();
-        const line = document.createElement('div');
-        line.innerHTML = `<span style="color:#666">> ${termIn.value}</span>`;
-        termLog.appendChild(line);
-        if(val === "help") line.innerHTML += `<br>- hack [id]<br>- clear<br>- sync`;
-        else if(val === "clear") termLog.innerHTML = "";
-        else if(val === "sync") syncCloud(false);
-        else if(val.startsWith("hack ")) {
-            let target = val.split(' ')[1].toUpperCase();
-            if(agents[target]) line.innerHTML += `<br><span style="color:cyan">DECRYPTING ${target}... PASS: ${agents[target].pass}</span>`;
-            else line.innerHTML += `<br>ID NOT FOUND`;
-        }
-        termIn.value = ""; termLog.scrollTop = termLog.scrollHeight;
-    }
-}
-
-// --- FENETRES DRAG & CLOSE ---
-let zIndex = 100;
-document.querySelectorAll("[data-open]").forEach(btn => btn.onclick = () => {
-    const win = document.getElementById("win-" + btn.dataset.open);
-    win.style.display = "flex"; win.style.zIndex = ++zIndex;
-});
-document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.close).style.display = "none");
-document.querySelectorAll(".window").forEach(win => {
-    win.querySelector(".titlebar").onmousedown = (e) => {
-        let ox = e.clientX - win.offsetLeft, oy = e.clientY - win.offsetTop;
-        win.style.zIndex = ++zIndex;
-        document.onmousemove = (ev) => { win.style.left = (ev.clientX-ox)+"px"; win.style.top = (ev.clientY-oy)+"px"; };
-        document.onmouseup = () => document.onmousemove = null;
+    let db = {
+        users: [],
+        mails: [],
+        docs: { categories: [], files: [] },
+        settings: { securityLevel: 'safe' },
+        dispatch: [],
+        news: []
     };
-});
+
+    let currentUser = null;
+    let activeWin = null;
+    let offset = [0, 0];
+    let currentMailBox = 'inbox';
+    let readNews = []; // Local tracking pour notifications
+
+    // --- CHARGEMENT DES DONNÉES ---
+    async function loadFromDB() {
+        try {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
+            });
+            const data = await res.json();
+            db = data.record;
+            if (!db.news) db.news = [];
+            updateUI();
+            console.log("Données chargées avec succès");
+        } catch (e) {
+            console.error("Erreur de chargement DB", e);
+        }
+    }
+
+    async function saveToDB() {
+        try {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY
+                },
+                body: JSON.stringify(db)
+            });
+        } catch (e) {
+            console.error("Erreur de sauvegarde DB", e);
+        }
+    }
+
+    // --- LOGIQUE DE CONNEXION ---
+    function handleLogin() {
+        const user = document.getElementById('login-user').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+        const msg = document.getElementById('login-msg');
+
+        if (!db.users || db.users.length === 0) {
+            msg.textContent = "SYNCHRONISATION DB EN COURS...";
+            return;
+        }
+
+        const found = db.users.find(u => u.name === user && u.badge === pass);
+
+        if (found) {
+            if (found.status === 'TERMINÉ') {
+                msg.textContent = "ACCÈS RÉVOQUÉ : AGENT TERMINÉ";
+                return;
+            }
+            currentUser = found;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('start-user-name').textContent = currentUser.name;
+            document.getElementById('start-user-lvl').textContent = "ACCRÉDITATION NIVEAU " + currentUser.level;
+            
+            const avatarBox = document.getElementById('start-avatar');
+            if (currentUser.avatarUrl) {
+                avatarBox.style.backgroundImage = `url('${currentUser.avatarUrl}')`;
+                avatarBox.textContent = '';
+            } else {
+                avatarBox.textContent = currentUser.name.charAt(0);
+                avatarBox.style.backgroundImage = 'none';
+            }
+            
+            if (currentUser.level >= 5) {
+                document.getElementById('archive-admin-bar').style.display = 'flex';
+                document.getElementById('news-admin-bar').style.display = 'block';
+            }
+            
+            updateUI();
+            addLog(`Connexion réussie : ${currentUser.name}`);
+        } else {
+            msg.textContent = "IDENTIFIANTS INVALIDES";
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 500);
+        }
+    }
+
+    function changeUserAvatar() {
+        const url = prompt("Entrez l'URL de votre nouvelle image de profil (cercle) :");
+        if (url) {
+            currentUser.avatarUrl = url;
+            const avatarBox = document.getElementById('start-avatar');
+            avatarBox.style.backgroundImage = `url('${url}')`;
+            avatarBox.textContent = '';
+            
+            const idx = db.users.findIndex(u => u.badge === currentUser.badge);
+            if (idx !== -1) db.users[idx].avatarUrl = url;
+            saveToDB();
+        }
+    }
+
+    // --- MISE À JOUR INTERFACE ---
+    function updateUI() {
+        const list = document.getElementById('employee-list');
+        if (list) {
+            list.innerHTML = '';
+            db.users.forEach((u, i) => {
+                list.innerHTML += `
+                    <tr>
+                        <td style="padding:10px;">${u.badge}</td>
+                        <td>${u.name}</td>
+                        <td><span class="lvl-badge lvl-${u.level}">${u.level}</span></td>
+                        <td style="color:${u.status === 'ACTIF' ? 'green' : 'red'}; font-weight:bold;">${u.status}</td>
+                        <td>
+                            <button onclick="editEmployee(${i})" style="cursor:pointer; padding:2px 5px;">EDIT</button>
+                            <button onclick="deleteEmployee(${i})" style="cursor:pointer; padding:2px 5px; color:red;">DEL</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        const statActive = document.getElementById('stat-active');
+        if (statActive) statActive.textContent = db.users.filter(u => u.status === 'ACTIF').length;
+        
+        const statTerm = document.getElementById('stat-terminated');
+        if (statTerm) statTerm.textContent = db.users.filter(u => u.status === 'TERMINÉ').length;
+        
+        const statLvl = document.getElementById('stat-level');
+        if (statLvl) {
+            statLvl.textContent = db.settings.securityLevel.toUpperCase();
+            document.getElementById('security-level').value = db.settings.securityLevel;
+        }
+
+        renderArchives();
+        renderMails();
+        renderDispatch();
+        renderNews();
+        updateNotifications();
+    }
+
+    // --- NOTIFICATIONS SYSTEM ---
+    function updateNotifications() {
+        if (!currentUser) return;
+
+        // Mails non lus
+        const unreadMails = db.mails.filter(m => m.to === currentUser.name && !m.read).length;
+        const mailTask = document.getElementById('notif-mail-task');
+        const mailDesk = document.getElementById('notif-mail-desktop');
+        
+        [mailTask, mailDesk].forEach(el => {
+            if (unreadMails > 0) {
+                el.textContent = unreadMails;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // News non lues (basé sur le tableau local readNews)
+        const unreadNewsCount = db.news.filter(n => !readNews.includes(n.id)).length;
+        const newsTask = document.getElementById('notif-news-task');
+        const newsDesk = document.getElementById('notif-news-desktop');
+        [newsTask, newsDesk].forEach(el => {
+            if (unreadNewsCount > 0) {
+                el.textContent = unreadNewsCount;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    // --- GESTION PERSONNEL ---
+    function saveEmployee() {
+        const name = document.getElementById('emp-name').value;
+        const badge = document.getElementById('emp-id').value;
+        const level = document.getElementById('emp-level').value;
+        const status = document.getElementById('emp-status').value;
+        const idx = parseInt(document.getElementById('edit-index').value);
+
+        if (!name || !badge) return;
+
+        let newEmp = { name, badge, level: parseInt(level), status };
+        if (idx !== -1 && db.users[idx].avatarUrl) newEmp.avatarUrl = db.users[idx].avatarUrl;
+
+        if (idx === -1) db.users.push(newEmp);
+        else db.users[idx] = newEmp;
+
+        saveToDB();
+        updateUI();
+        resetForm();
+        addLog(`DB Personnel mise à jour : ${name}`);
+    }
+
+    function editEmployee(i) {
+        const u = db.users[i];
+        document.getElementById('emp-name').value = u.name;
+        document.getElementById('emp-id').value = u.badge;
+        document.getElementById('emp-level').value = u.level;
+        document.getElementById('emp-status').value = u.status;
+        document.getElementById('edit-index').value = i;
+        document.getElementById('form-title').textContent = "Modifier Personnel";
+        document.getElementById('btn-save').textContent = "METTRE À JOUR";
+        document.getElementById('btn-cancel').style.display = 'block';
+    }
+
+    function deleteEmployee(i) {
+        if (confirm("Supprimer définitivement cet agent de la base ?")) {
+            db.users.splice(i, 1);
+            saveToDB();
+            updateUI();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('emp-name').value = '';
+        document.getElementById('emp-id').value = '';
+        document.getElementById('edit-index').value = '-1';
+        document.getElementById('form-title').textContent = "Enregistrer Personnel";
+        document.getElementById('btn-save').textContent = "ENREGISTRER";
+        document.getElementById('btn-cancel').style.display = 'none';
+    }
+
+    // --- ARCHIVES ---
+    function renderArchives() {
+        const sidebar = document.getElementById('archive-sidebar');
+        const catSelect = document.getElementById('edit-doc-cat');
+        if (!sidebar) return;
+        
+        sidebar.innerHTML = '';
+        catSelect.innerHTML = '';
+
+        db.docs.categories.forEach(cat => {
+            catSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            sidebar.innerHTML += `<div class="doc-category">${cat}</div>`;
+            
+            const docs = db.docs.files.filter(f => f.category === cat);
+            docs.forEach(doc => {
+                sidebar.innerHTML += `
+                    <div class="doc-item" onclick="openDocument('${doc.id}')">
+                        📄 ${doc.title}
+                        <span class="lvl-badge lvl-${doc.minLevel}">L${doc.minLevel}</span>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function openDocument(id) {
+        const doc = db.docs.files.find(f => f.id === id);
+        const titleArea = document.getElementById('doc-title');
+        const contentArea = document.getElementById('doc-content');
+
+        if (currentUser.level < doc.minLevel) {
+            titleArea.innerHTML = "<span style='color:red;'>ACCÈS REFUSÉ</span>";
+            contentArea.innerHTML = "<p>Niveau d'accréditation insuffisant. Ce transfert a été enregistré.</p>";
+            addLog(`Alerte : Tentative d'accès non autorisé de ${currentUser.name} sur ${doc.title}`);
+            return;
+        }
+        
+        titleArea.textContent = doc.title;
+        let finalContent = doc.body;
+        if (doc.imageUrl) {
+            finalContent = `<img src="${doc.imageUrl}" style="max-width:300px; display:block; margin-bottom:20px; border:2px solid #000;">` + finalContent;
+        }
+        contentArea.innerHTML = finalContent;
+        addLog(`Document consulté : ${doc.title}`);
+    }
+
+    function showDocEditor() {
+        document.getElementById('doc-display-area').style.display = 'none';
+        document.getElementById('doc-editor-area').style.display = 'flex';
+    }
+
+    function cancelDocEdit() {
+        document.getElementById('doc-display-area').style.display = 'block';
+        document.getElementById('doc-editor-area').style.display = 'none';
+    }
+
+    function saveDocument() {
+        const title = document.getElementById('edit-doc-title').value;
+        const category = document.getElementById('edit-doc-cat').value;
+        const imgUrl = document.getElementById('edit-doc-img').value;
+        const minLevel = parseInt(document.getElementById('edit-doc-lvl').value);
+        const body = document.getElementById('edit-doc-body').value;
+
+        if (!title || !body) return;
+
+        const newDoc = { id: 'doc_' + Date.now(), title, category, minLevel, body, imageUrl: imgUrl };
+        db.docs.files.push(newDoc);
+        saveToDB();
+        updateUI();
+        cancelDocEdit();
+    }
+
+    function createNewCategory() {
+        const name = prompt("Nom de la nouvelle catégorie d'archives :");
+        if (name && !db.docs.categories.includes(name)) {
+            db.docs.categories.push(name);
+            saveToDB();
+            updateUI();
+        }
+    }
+
+    // --- MAIL SYSTEM ---
+    function switchMailBox(box) {
+        currentMailBox = box;
+        document.querySelectorAll('.mail-nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-' + box).classList.add('active');
+        
+        document.getElementById('mail-view-empty').style.display = 'flex';
+        document.getElementById('mail-view-content').style.display = 'none';
+        document.getElementById('mail-composer').style.display = 'none';
+        document.getElementById('mail-reader-area').style.display = 'flex';
+        
+        renderMails();
+    }
+
+    function renderMails() {
+        const list = document.getElementById('mail-list-area');
+        if (!list || !currentUser) return;
+        
+        list.innerHTML = '';
+        let filteredMails = [];
+        
+        if (currentMailBox === 'inbox') {
+            filteredMails = db.mails.filter(m => m.to === currentUser.name).reverse();
+        } else {
+            filteredMails = db.mails.filter(m => m.from === currentUser.name).reverse();
+        }
+        
+        filteredMails.forEach(m => {
+            const label = currentMailBox === 'inbox' ? m.from : "À : " + m.to;
+            list.innerHTML += `
+                <div class="mail-item ${(currentMailBox === 'inbox' && !m.read) ? 'unread' : ''}" onclick="readMail('${m.id}')">
+                    <div style="font-weight:bold; font-size:13px;">${label}</div>
+                    <div style="font-size:12px; color:#444;">${m.subject}</div>
+                    <div style="font-size:10px; color:#888; margin-top:5px;">${m.date}</div>
+                </div>
+            `;
+        });
+    }
+
+    function readMail(id) {
+        const mail = db.mails.find(m => m.id === id);
+        if (currentMailBox === 'inbox') mail.read = true;
+        
+        document.getElementById('mail-view-empty').style.display = 'none';
+        document.getElementById('mail-view-content').style.display = 'block';
+        document.getElementById('mail-subject-display').textContent = mail.subject;
+        document.getElementById('mail-date-display').textContent = mail.date;
+        
+        const directionLabel = document.getElementById('mail-direction-label');
+        const fromDisplay = document.getElementById('mail-from-display');
+        
+        if (currentMailBox === 'inbox') {
+            directionLabel.textContent = "De :";
+            fromDisplay.textContent = mail.from;
+        } else {
+            directionLabel.textContent = "Destinataire :";
+            fromDisplay.textContent = mail.to;
+        }
+        
+        let mailBody = mail.body;
+        if (mail.imageUrl) {
+            mailBody += `\n\n<img src="${mail.imageUrl}" style="max-width:100%; border-radius:4px; border: 1px solid #ddd;">`;
+        }
+        document.getElementById('mail-body-display').innerHTML = mailBody;
+        
+        renderMails();
+        updateNotifications();
+        saveToDB();
+    }
+
+    function showCompose() {
+        document.getElementById('mail-composer').style.display = 'flex';
+        document.getElementById('mail-reader-area').style.display = 'none';
+    }
+
+    function hideCompose() {
+        document.getElementById('mail-composer').style.display = 'none';
+        document.getElementById('mail-reader-area').style.display = 'flex';
+    }
+
+    function sendMail() {
+        const to = document.getElementById('mail-to').value;
+        const subject = document.getElementById('mail-subject').value;
+        const body = document.getElementById('mail-body').value;
+        const imgUrl = document.getElementById('mail-img').value;
+
+        if (!to || !subject || !body) return;
+
+        const newMail = {
+            id: 'mail_' + Date.now(),
+            from: currentUser.name,
+            to: to,
+            subject: subject,
+            body: body,
+            imageUrl: imgUrl,
+            date: new Date().toLocaleString('fr-FR'),
+            read: false
+        };
+
+        db.mails.push(newMail);
+        saveToDB();
+        hideCompose();
+        alert("Message envoyé sur le réseau sécurisé.");
+        renderMails();
+    }
+
+    // --- NEWS SYSTEM ---
+    function renderNews() {
+        const list = document.getElementById('news-list');
+        if (!list) return;
+        list.innerHTML = '';
+        if (!db.news) db.news = [];
+        
+        db.news.slice().reverse().forEach(n => {
+            const isRead = readNews.includes(n.id);
+            const adminBtn = (currentUser && currentUser.level >= 5) ? `<button class="btn-del-news" onclick="event.stopPropagation(); deleteNews('${n.id}')">SUPPRIMER</button>` : '';
+            const imgPrev = n.imageUrl ? `<img src="${n.imageUrl}" class="news-img-preview">` : '';
+            
+            list.innerHTML += `
+                <div class="news-item" style="${isRead ? 'opacity: 0.7;' : 'border-left: 3px solid red;'}" onclick="openNews('${n.id}')">
+                    ${adminBtn}
+                    ${imgPrev}
+                    <h4>⚠️ ${n.title}</h4>
+                    <div class="news-date">${n.date}</div>
+                    <div class="news-preview">${n.body}</div>
+                </div>
+            `;
+        });
+    }
+
+    function openNews(id) {
+        const news = db.news.find(n => n.id === id);
+        if (!news) return;
+
+        // Marquer comme lu localement
+        if (!readNews.includes(id)) {
+            readNews.push(id);
+        }
+
+        document.getElementById('news-empty-view').style.display = 'none';
+        document.getElementById('news-full-view').style.display = 'block';
+        
+        document.getElementById('news-v-title').textContent = news.title;
+        document.getElementById('news-v-meta').textContent = `PUBLIÉ LE ${news.date} PAR ${news.author.toUpperCase()}`;
+        
+        let content = news.body;
+        if (news.imageUrl) {
+            content = `<img src="${news.imageUrl}" class="news-viewer-img"><br><br>` + content;
+        }
+        document.getElementById('news-v-body').innerHTML = content;
+        
+        updateNotifications();
+        renderNews();
+    }
+
+    function deleteNews(id) {
+        if (confirm("Voulez-vous vraiment supprimer cette annonce ?")) {
+            db.news = db.news.filter(n => n.id !== id);
+            saveToDB();
+            updateUI();
+            document.getElementById('news-empty-view').style.display = 'flex';
+            document.getElementById('news-full-view').style.display = 'none';
+        }
+    }
+
+    function showNewsCreate() { document.getElementById('news-create-area').style.display = 'block'; }
+    function hideNewsCreate() { document.getElementById('news-create-area').style.display = 'none'; }
+    
+    function postNews() {
+        const title = document.getElementById('news-title-in').value;
+        const img = document.getElementById('news-img-in').value;
+        const body = document.getElementById('news-body-in').value;
+        if (!title || !body) return;
+
+        db.news.push({
+            id: 'news_' + Date.now(),
+            title, body,
+            imageUrl: img,
+            author: currentUser.name,
+            date: new Date().toLocaleString('fr-FR')
+        });
+        saveToDB();
+        updateUI();
+        hideNewsCreate();
+        
+        // Reset inputs
+        document.getElementById('news-title-in').value = '';
+        document.getElementById('news-img-in').value = '';
+        document.getElementById('news-body-in').value = '';
+    }
+
+    // --- DISPATCH ---
+    function renderDispatch() {
+        const feed = document.getElementById('dispatch-feed');
+        if (!feed) return;
+        feed.innerHTML = '';
+        db.dispatch.slice(-20).reverse().forEach(d => {
+            feed.innerHTML += `
+                <div class="dispatch-row">
+                    <span style="color:#666; font-weight:bold;">[${d.time}]</span>
+                    <span style="color:var(--win-blue); font-weight:bold;">${d.user}</span>
+                    <span>${d.msg}</span>
+                </div>
+            `;
+        });
+    }
+
+    function toggleDuty() {
+        const onDuty = document.getElementById('duty-btn').textContent.includes("PRENDRE");
+        const btn = document.getElementById('duty-btn');
+        const status = document.getElementById('duty-status');
+
+        if (onDuty) {
+            btn.textContent = "FIN DE SERVICE";
+            btn.style.background = "#c0392b";
+            status.textContent = "STATUT : EN SERVICE";
+            db.dispatch.push({ user: currentUser.name, msg: "a pris son service.", time: new Date().toLocaleTimeString('fr-FR') });
+        } else {
+            btn.textContent = "PRENDRE SON SERVICE";
+            btn.style.background = "#27ae60";
+            status.textContent = "STATUT : HORS SERVICE";
+            db.dispatch.push({ user: currentUser.name, msg: "a terminé son service.", time: new Date().toLocaleTimeString('fr-FR') });
+        }
+        saveToDB();
+        renderDispatch();
+    }
+
+    // --- SYSTEME ---
+    function updateSecurityLevel() {
+        db.settings.securityLevel = document.getElementById('security-level').value;
+        saveToDB();
+        updateUI();
+        addLog(`ALERTE : Niveau de sécurité Site-19 modifié vers ${db.settings.securityLevel.toUpperCase()}`);
+        if (db.settings.securityLevel === 'apollyon') {
+            document.body.classList.add('lockdown-active');
+        } else {
+            document.body.classList.remove('lockdown-active');
+        }
+    }
+
+    function toggleApp(id, taskId) {
+        const win = document.getElementById(id);
+        const task = document.getElementById(taskId);
+        if (win.style.display === 'flex') {
+            win.style.display = 'none';
+            task.classList.remove('active');
+        } else {
+            win.style.display = 'flex';
+            task.style.display = 'flex';
+            task.classList.add('active');
+            bringToFront(win);
+        }
+    }
+
+    function bringToFront(win) {
+        document.querySelectorAll('.win-app').forEach(w => w.style.zIndex = 10);
+        win.style.zIndex = 100;
+    }
+
+    function toggleStartMenu() {
+        const menu = document.getElementById('start-menu');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function switchAdminTab(tab) {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('admin-section-overview').style.display = tab === 'overview' ? 'block' : 'none';
+        document.getElementById('admin-section-personnel').style.display = tab === 'personnel' ? 'flex' : 'none';
+        document.getElementById('admin-section-logs').style.display = tab === 'logs' ? 'flex' : 'none';
+    }
+
+    function addLog(msg) {
+        const logs = document.getElementById('admin-logs');
+        if (logs) {
+            logs.innerHTML += `<br><span>[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+    }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('date').textContent = now.toLocaleDateString('fr-FR');
+    }
+
+    // --- INITIALISATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+        loadFromDB();
+        setInterval(updateClock, 1000);
+        
+        const grid = document.getElementById('map-grid');
+        for(let i=0; i<100; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'map-cell';
+            grid.appendChild(cell);
+        }
+
+        document.querySelectorAll('.win-app').forEach(win => {
+            const header = win.querySelector('.win-header');
+            header.onmousedown = (e) => {
+                activeWin = win;
+                bringToFront(win);
+                offset = [win.offsetLeft - e.clientX, win.offsetTop - e.clientY];
+            };
+        });
+
+        document.addEventListener('mouseup', () => activeWin = null);
+        document.addEventListener('mousemove', (e) => {
+            if (!activeWin) return;
+            activeWin.style.left = (e.clientX + offset[0]) + 'px';
+            activeWin.style.top = (e.clientY + offset[1]) + 'px';
+        });
+
+        document.getElementById('login-pass').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+    });
 </script>
+
 </body>
 </html>
